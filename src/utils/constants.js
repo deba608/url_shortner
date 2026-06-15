@@ -1,0 +1,7 @@
+module.exports = {
+  SHORT_CODE_LENGTH: 6,
+  ALIAS_MIN_LENGTH: 3,
+  ALIAS_MAX_LENGTH: 20,
+  SUGGESTION_COUNT: 5,
+  ALIAS_PATTERN: /^[a-zA-Z0-9_-]+$/,
+};
