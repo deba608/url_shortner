@@ -58,6 +58,24 @@ app.post("/shorten", async (req, res) => {
     }
 });
 
+app.get("/stats/:shortCode", async (req, res) => {
+
+    const { shortCode } = req.params;
+
+    const url = await prisma.url.findUnique({
+        where: {
+            shortCode
+        }
+    });
+
+    if (!url) {
+        return res.status(404).json({
+            message: "URL not found"
+        });
+    }
+
+    res.json(url);
+});
 
 // Redirect Route
 app.get("/:shortCode", async (req, res) => {
