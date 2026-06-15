@@ -20,6 +20,14 @@ app.post("/shorten", async (req, res) => {
     try {
         const { url } = req.body;
 
+        try {
+            new URL(url);
+        } catch {
+            return res.status(400).json({
+                message: "Invalid URL"
+            });
+        }
+
         // Validation
         if (!url) {
             return res.status(400).json({
