@@ -1,7 +1,12 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
+import Button from "@/components/ui/Button";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Home() {
+  useDocumentTitle("");
+  const navigate = useNavigate();
+
   return (
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 px-6 text-center">
       <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
@@ -12,18 +17,12 @@ export default function Home() {
         and watch the clicks roll in.
       </p>
       <div className="flex gap-3">
-        <Link
-          to={ROUTES.REGISTER}
-          className="rounded-lg bg-indigo-600 px-5 py-2.5 font-medium text-white transition hover:bg-indigo-700"
-        >
+        <Button onClick={() => navigate(ROUTES.REGISTER)}>
           Get started
-        </Link>
-        <Link
-          to={ROUTES.LOGIN}
-          className="rounded-lg border border-gray-300 px-5 py-2.5 font-medium transition hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800"
-        >
+        </Button>
+        <Button variant="secondary" onClick={() => navigate(ROUTES.LOGIN)}>
           Log in
-        </Link>
+        </Button>
       </div>
     </main>
   );

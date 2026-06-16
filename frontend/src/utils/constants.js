@@ -1,8 +1,7 @@
-// Single source of truth for the localStorage key holding the JWT.
-// Centralised so we never typo the key across the codebase.
+export const BRAND_NAME = "Shortly";
+
 export const TOKEN_KEY = "url_shortener_token";
 
-// Application route paths in one place — avoids magic strings in <Link>/navigate.
 export const ROUTES = {
   HOME: "/",
   LOGIN: "/login",
@@ -11,3 +10,8 @@ export const ROUTES = {
   URLS: "/urls",
   ANALYTICS: "/urls/:id/analytics",
 };
+
+export const RECENT_URLS_LIMIT = 5;
+export const TRUNCATE_LENGTH = 48;
+export const ANALYTICS_DAYS = 7;
+export const TRUNCATE_DASHBOARD_LENGTH = 60;

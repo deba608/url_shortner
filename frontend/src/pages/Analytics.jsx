@@ -7,8 +7,10 @@ import StatCard from "@/components/dashboard/StatCard";
 import ClicksChart from "@/components/analytics/ClicksChart";
 import Skeleton from "@/components/ui/Skeleton";
 import Card from "@/components/ui/Card";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Analytics() {
+  useDocumentTitle("Analytics");
   const { id } = useParams();
   const { data, loading, error, refetch } = useAnalytics(id);
 

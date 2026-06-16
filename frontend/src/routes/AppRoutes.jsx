@@ -4,8 +4,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import Spinner from "@/components/ui/Spinner";
 
-// Lazy loaded page components
 const Home = lazy(() => import("@/pages/Home"));
 const Login = lazy(() => import("@/pages/Login"));
 const Register = lazy(() => import("@/pages/Register"));
@@ -14,44 +14,36 @@ const MyUrls = lazy(() => import("@/pages/MyUrls"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 
-// Redirects authenticated users away from auth pages.
 function PublicOnly({ children }) {
   const { isAuthenticated, initializing } = useAuth();
   if (initializing) return null;
   return isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : children;
 }
 
-// A simple loading fallback
 const PageLoader = () => (
   <div className="flex min-h-[50vh] items-center justify-center">
-    <div className="h-8 w-8 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent dark:border-indigo-400"></div>
+    <Spinner className="h-8 w-8 border-4 border-indigo-600 border-t-transparent dark:border-indigo-400" />
   </div>
 );
 
 export default function AppRoutes() {
   return (
-    <Suspense fallback={<PageLoader />}>
-      <Routes>
-        <Route path={ROUTES.HOME} element={<Home />} />
-        <Route path={ROUTES.LOGIN} element={<PublicOnly><Login /></PublicOnly>} />
-        <Route path={ROUTES.REGISTER} element={<PublicOnly><Register /></PublicOnly>} />
-
-        {/* Authenticated app: ProtectedRoute guards the shared layout, nested
-            routes render inside its <Outlet/>. */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
-          <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
-          <Route path={ROUTES.URLS} element={<MyUrls />} />
-          <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
-        </Route>
-
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-    </Suspense>
+    <Routes>
+      <Route path={ROUTES.HOME} element={<Suspense fallback={<PageLoader />}><Home /></Suspense>} />
+      <Route path={ROUTES.LOGIN} element={<Suspense fallback={<PageLoader />}><PublicOnly><Login /></PublicOnly></Suspense>} />
+      <Route path={ROUTES.REGISTER} element={<Suspense fallback={<PageLoader />}><PublicOnly><Register /></PublicOnly></Suspense>} />
+      <Route
+        element={
+          <ProtectedRoute>
+            <DashboardLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route path={ROUTES.DASHBOARD} element={<Suspense fallback={<PageLoader />}><Dashboard /></Suspense>} />
+        <Route path={ROUTES.URLS} element={<Suspense fallback={<PageLoader />}><MyUrls /></Suspense>} />
+        <Route path={ROUTES.ANALYTICS} element={<Suspense fallback={<PageLoader />}><Analytics /></Suspense>} />
+      </Route>
+      <Route path="*" element={<Suspense fallback={<PageLoader />}><NotFound /></Suspense>} />
+    </Routes>
   );
 }

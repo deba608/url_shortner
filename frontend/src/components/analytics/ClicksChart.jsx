@@ -9,11 +9,9 @@ import {
 } from "recharts";
 import Card from "@/components/ui/Card";
 
-// Daily clicks bar chart. Bars (not a line) because the data is discrete daily
-// counts, not a continuous signal — bars read as "how many on each day" without
-// implying interpolation between points. Y axis uses integer ticks since clicks
-// are whole numbers.
 export default function ClicksChart({ data }) {
+  if (!data) return null;
+
   const hasClicks = data.some((d) => d.clicks > 0);
 
   return (
@@ -30,7 +28,13 @@ export default function ClicksChart({ data }) {
             <YAxis allowDecimals={false} tick={{ fontSize: 12 }} stroke="currentColor" className="text-gray-400" />
             <Tooltip
               cursor={{ fill: "rgba(99,102,241,0.1)" }}
-              contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
+              contentStyle={{
+                borderRadius: 8,
+                border: "1px solid var(--tw-border-color, #e5e7eb)",
+                fontSize: 13,
+                background: "var(--tw-bg, #fff)",
+                color: "var(--tw-text, #111827)",
+              }}
               labelFormatter={(label) => `${label}`}
               formatter={(value) => [`${value} clicks`, ""]}
             />

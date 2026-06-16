@@ -1,30 +1,37 @@
 import { useState, useEffect, useCallback } from "react";
 import { getUserUrls } from "@/api/urls";
 
-// Encapsulates fetching the user's URLs with explicit loading/error/refetch.
-// (A deliberate "hand-rolled" version — Phase 5 notes where React Query would
-// replace this with caching + background refresh for free.)
 export function useUrls() {
   const [urls, setUrls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchUrls = useCallback(async () => {
+  const fetchUrls = useCallback(async (signal) => {
     setLoading(true);
     setError(null);
     try {
-      const data = await getUserUrls();
-      setUrls(data);
+      const data = await getUserUrls({ signal });
+      if (!signal.aborted) setUrls(data);
     } catch (err) {
-      setError(err.message || "Failed to load URLs");
+      if (err?.name !== "AbortError" && !signal.aborted) {
+        setError(err.message || "Failed to load URLs");
+      }
     } finally {
-      setLoading(false);
+      if (!signal.aborted) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchUrls();
+    const controller = new AbortController();
+    fetchUrls(controller.signal);
+    return () => controller.abort();
   }, [fetchUrls]);
 
-  return { urls, loading, error, refetch: fetchUrls };
+  const refetch = useCallback(() => {
+    const controller = new AbortController();
+    fetchUrls(controller.signal);
+    return () => controller.abort();
+  }, [fetchUrls]);
+
+  return { urls, loading, error, refetch };
 }

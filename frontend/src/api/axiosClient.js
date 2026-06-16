@@ -1,36 +1,25 @@
 import axios from "axios";
 import { getToken, clearToken } from "@/utils/token";
+import { ROUTES } from "@/utils/constants";
 
 const resolveApiBaseUrl = () => {
-  const productionApiUrl = "https://url-shortner-eceq.onrender.com";
-
-  // In development, return empty string so Axios calls go to the *same*
-  // origin (Vite dev server on :5173). Vite's proxy then forwards them to
-  // Express on :3000 — no CORS headers needed at all.
   if (import.meta.env.DEV) {
     return import.meta.env.VITE_API_URL || "";
   }
 
-  // Production: honour explicit override, fall back to the deployed URL.
-  const configured = import.meta.env.VITE_API_URL || productionApiUrl;
-  const trimmed = configured.replace(/\/+$/, "");
-
-  if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimmed)) {
-    return productionApiUrl;
+  const configured = import.meta.env.VITE_API_URL;
+  if (!configured) {
+    throw new Error("VITE_API_URL environment variable is not set");
   }
-
+  const trimmed = configured.replace(/\/+$/, "");
   return trimmed.replace(/\/api$/, "");
 };
 
-// One configured Axios instance for the whole app. Every API module imports
-// THIS, never bare `axios`, so the base URL, auth header, and error handling
-// are applied uniformly.
 const axiosClient = axios.create({
   baseURL: resolveApiBaseUrl(),
   headers: { "Content-Type": "application/json" },
 });
 
-// Request interceptor: attach the JWT (if present) as a Bearer token.
 axiosClient.interceptors.request.use((config) => {
   const token = getToken();
   if (token) {
@@ -39,14 +28,10 @@ axiosClient.interceptors.request.use((config) => {
   return config;
 });
 
-// Response interceptor: normalise errors into a consistent shape and handle
-// global concerns (expired/invalid token => force re-auth).
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-
-    // Backend uses { error } for auth and { message } for the URL layer.
     const message =
       error.response?.data?.message ||
       error.response?.data?.error ||
@@ -54,10 +39,9 @@ axiosClient.interceptors.response.use(
       "Something went wrong";
 
     if (status === 401 || status === 403) {
-      // Token missing/expired/invalid: drop it and bounce to login.
       clearToken();
-      if (window.location.pathname !== "/login") {
-        window.location.assign("/login");
+      if (window.location.pathname !== ROUTES.LOGIN) {
+        window.location.assign(ROUTES.LOGIN);
       }
     }
 

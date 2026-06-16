@@ -38,8 +38,7 @@ export default function CreateUrlForm({ onCreated }) {
       toast("Short URL created", "success");
       onCreated?.(); // refresh list + stats in the parent
     } catch (err) {
-      // Backend returns alias suggestions on a 409 conflict.
-      const suggestions = err.raw?.response?.data?.suggestions;
+      const suggestions = err?.raw?.response?.data?.suggestions;
       setError(
         suggestions?.length
           ? `${err.message}. Try: ${suggestions.join(", ")}`
@@ -57,7 +56,7 @@ export default function CreateUrlForm({ onCreated }) {
         <div className="flex-1">
           <Input
             id="url"
-            type="text"
+            type="url"
             placeholder="https://example.com/very/long/link"
             value={url}
             onChange={(e) => setUrl(e.target.value)}

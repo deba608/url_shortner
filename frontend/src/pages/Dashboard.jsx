@@ -3,8 +3,10 @@ import { useUrls } from "@/hooks/useUrls";
 import StatCard from "@/components/dashboard/StatCard";
 import CreateUrlForm from "@/components/dashboard/CreateUrlForm";
 import RecentUrls from "@/components/dashboard/RecentUrls";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Dashboard() {
+  useDocumentTitle("Dashboard");
   const { urls, loading, error, refetch } = useUrls();
 
   // Derive headline stats from the already-fetched list — no extra request.

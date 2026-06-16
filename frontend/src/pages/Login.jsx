@@ -6,8 +6,10 @@ import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function Login() {
+  useDocumentTitle("Log in");
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();

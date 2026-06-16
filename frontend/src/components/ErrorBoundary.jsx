@@ -12,23 +12,34 @@ class ErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error, errorInfo) {
-    console.error("ErrorBoundary caught an error:", error, errorInfo);
+    if (import.meta.env.DEV) {
+      console.error("ErrorBoundary caught an error:", error, errorInfo);
+    }
   }
+
+  handleReset = () => {
+    this.setState({ hasError: false, error: null });
+  };
 
   render() {
     if (this.state.hasError) {
       return (
         <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-          <div className="text-center p-8 bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-            <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-8 text-center shadow-xl dark:bg-gray-800">
+            <h2 className="mb-4 text-2xl font-bold text-red-600 dark:text-red-400">
               Something went wrong
             </h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              An unexpected error occurred. Please try refreshing the page.
+            <p className="mb-6 text-gray-600 dark:text-gray-300">
+              An unexpected error occurred. Please try again.
             </p>
-            <Button onClick={() => window.location.reload()}>
-              Refresh Page
-            </Button>
+            <div className="flex justify-center gap-3">
+              <Button onClick={this.handleReset}>
+                Try again
+              </Button>
+              <Button variant="secondary" onClick={() => window.location.reload()}>
+                Refresh page
+              </Button>
+            </div>
           </div>
         </div>
       );

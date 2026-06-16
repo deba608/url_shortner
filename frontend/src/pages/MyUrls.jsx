@@ -1,8 +1,10 @@
 import { useUrls } from "@/hooks/useUrls";
 import UrlCard from "@/components/url/UrlCard";
 import Skeleton from "@/components/ui/Skeleton";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
 export default function MyUrls() {
+  useDocumentTitle("My URLs");
   const { urls, loading, error, refetch } = useUrls();
 
   return (

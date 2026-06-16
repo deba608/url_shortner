@@ -9,7 +9,7 @@ import Button from "@/components/ui/Button";
 export default function QrModal({ urlId, shortCode, open, onClose }) {
   const [qr, setQr] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!open) return;

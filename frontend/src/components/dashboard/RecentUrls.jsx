@@ -2,16 +2,14 @@ import { Link } from "react-router-dom";
 import Card from "@/components/ui/Card";
 import Skeleton from "@/components/ui/Skeleton";
 import { formatDate, truncate } from "@/utils/format";
-import { ROUTES } from "@/utils/constants";
+import { ROUTES, RECENT_URLS_LIMIT, TRUNCATE_DASHBOARD_LENGTH } from "@/utils/constants";
 
-// Compact list of the most recent URLs for the dashboard. The full management
-// table (copy / delete / QR / analytics) lives on the My URLs page in Phase 4.
 export default function RecentUrls({ urls, loading, error, onRetry }) {
   return (
     <Card>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">Recent URLs</h2>
-        <Link to={ROUTES.URLS} className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
+        <Link to={ROUTES.URLS} aria-label="View all URLs" className="text-sm text-indigo-600 hover:underline dark:text-indigo-400">
           View all →
         </Link>
       </div>
@@ -42,7 +40,7 @@ export default function RecentUrls({ urls, loading, error, onRetry }) {
 
         {!loading && !error && urls.length > 0 && (
           <ul className="divide-y divide-gray-100 dark:divide-gray-800">
-            {urls.slice(0, 5).map((u) => (
+            {urls.slice(0, RECENT_URLS_LIMIT).map((u) => (
               <li key={u.id} className="flex items-center justify-between gap-4 py-3">
                 <div className="min-w-0">
                   <a
@@ -53,7 +51,7 @@ export default function RecentUrls({ urls, loading, error, onRetry }) {
                   >
                     /{u.shortCode}
                   </a>
-                  <p className="truncate text-xs text-gray-500">{truncate(u.originalUrl, 60)}</p>
+                  <p className="truncate text-xs text-gray-500">{truncate(u.originalUrl, TRUNCATE_DASHBOARD_LENGTH)}</p>
                 </div>
                 <div className="shrink-0 text-right">
                   <p className="text-sm font-medium">{u.clicks} clicks</p>
