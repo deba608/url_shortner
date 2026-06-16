@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 const urlRoutes = require("./routes/urlRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middlewares/errorHandler");
@@ -9,6 +10,7 @@ const swaggerSpec = require("./config/swagger");
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
 app.use(rateLimiter);
 
