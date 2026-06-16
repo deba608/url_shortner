@@ -23,6 +23,7 @@ html,
 body,
 #root {
   height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -64,9 +65,9 @@ body {
 .skeleton {
   background: linear-gradient(
     90deg,
-    theme(colors.gray.800) 25%,
-    theme(colors.gray.700) 50%,
-    theme(colors.gray.800) 75%
+    #1f2937 25%,
+    #374151 50%,
+    #1f2937 75%
   );
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
@@ -179,6 +180,6 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: theme(colors.gray.700);
+  background: #374151;
   border-radius: 4px;
 }
