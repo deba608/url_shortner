@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { createShortUrl } from "@/api/urls";
 import { validateUrl } from "@/utils/validators";
 import { useAuth } from "@/hooks/useAuth";
+import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
 import Button from "@/components/ui/Button";
 
@@ -16,8 +18,9 @@ async function copyText(text) {
 }
 
 // ── Main component ───────────────────────────────────────────
-export default function Home({ onOpenAuth }) {
+export default function Home() {
   const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [showAlias, setShowAlias] = useState(false);
@@ -138,7 +141,7 @@ export default function Home({ onOpenAuth }) {
                 <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
                   {!isAuthenticated && (
                     <button
-                      onClick={() => onOpenAuth?.("register")}
+                      onClick={() => navigate(ROUTES.REGISTER)}
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-500/30 backdrop-blur-md border border-indigo-400/30 text-white hover:bg-indigo-500/40 shadow-sm transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -220,7 +223,7 @@ export default function Home({ onOpenAuth }) {
                   <span className="text-indigo-500 cursor-pointer hover:underline">Terms of Service</span>.
                   {!isAuthenticated && (
                     <>{" "}
-                      <button type="button" onClick={() => onOpenAuth?.("login")} className="text-indigo-500 hover:underline">
+                      <button type="button" onClick={() => navigate(ROUTES.LOGIN)} className="text-indigo-500 hover:underline">
                         Log in
                       </button>{" "}
                       to track analytics.

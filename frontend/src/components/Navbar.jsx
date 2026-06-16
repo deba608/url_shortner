@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
@@ -26,11 +26,12 @@ const HomeIcon = () => (
   </svg>
 );
 
-export default function Navbar({ onOpenAuth }) {
+export default function Navbar() {
   const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -92,10 +93,10 @@ export default function Navbar({ onOpenAuth }) {
                 </>
               ) : (
                 <>
-                  <Button variant="secondary" size="sm" onClick={() => onOpenAuth?.("login")}>
+                  <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.LOGIN)}>
                     Log in
                   </Button>
-                  <Button size="sm" onClick={() => onOpenAuth?.("register")}>
+                  <Button size="sm" onClick={() => navigate(ROUTES.REGISTER)}>
                     Sign up free
                   </Button>
                 </>
@@ -178,7 +179,7 @@ export default function Navbar({ onOpenAuth }) {
             ) : (
               <>
                 <button
-                  onClick={() => { setMobileOpen(false); onOpenAuth?.("login"); }}
+                  onClick={() => { setMobileOpen(false); navigate(ROUTES.LOGIN); }}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -187,7 +188,7 @@ export default function Navbar({ onOpenAuth }) {
                   Log in
                 </button>
                 <button
-                  onClick={() => { setMobileOpen(false); onOpenAuth?.("register"); }}
+                  onClick={() => { setMobileOpen(false); navigate(ROUTES.REGISTER); }}
                   className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-indigo-400 bg-indigo-500/10 transition-colors"
                 >
                   <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
