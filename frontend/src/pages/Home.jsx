@@ -1,29 +1,391 @@
-import { useNavigate } from "react-router-dom";
-import { ROUTES } from "@/utils/constants";
+import { useState } from "react";
+import { createShortUrl } from "@/api/urls";
+import { validateUrl } from "@/utils/validators";
+import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/ui/Button";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
-export default function Home() {
-  useDocumentTitle("");
-  const navigate = useNavigate();
+// ── Feature card data ────────────────────────────────────────
+const FEATURES = [
+  {
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    ),
+    gradient: "from-amber-400 to-orange-500",
+    title: "Instant & Free",
+    desc: "No sign-up needed. Paste your long URL and get a short one in milliseconds.",
+  },
+  {
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round"
+          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+      </svg>
+    ),
+    gradient: "from-indigo-500 to-violet-600",
+    title: "Real-time Analytics",
+    desc: "Track every click with detailed analytics — daily trends, unique visitors, QR codes.",
+  },
+  {
+    icon: (
+      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <path strokeLinecap="round" strokeLinejoin="round"
+          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+      </svg>
+    ),
+    gradient: "from-emerald-400 to-teal-500",
+    title: "Custom Aliases",
+    desc: "Brand your links with custom slugs. Set expiration dates. Full control.",
+  },
+];
+
+const STATS = [
+  { value: "10K+", label: "Links Created" },
+  { value: "99.9%", label: "Uptime" },
+  { value: "< 100ms", label: "Redirect Speed" },
+];
+
+// ── Copy to clipboard helper ─────────────────────────────────
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// ── Main component ───────────────────────────────────────────
+export default function Home({ onOpenAuth }) {
+  const { isAuthenticated } = useAuth();
+  const [url, setUrl] = useState("");
+  const [customAlias, setCustomAlias] = useState("");
+  const [showAlias, setShowAlias] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [result, setResult] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  const handleShorten = async (e) => {
+    e.preventDefault();
+    setError("");
+    setResult(null);
+    setCopied(false);
+
+    const { error: urlError, normalised } = validateUrl(url.trim());
+    if (urlError) { setError(urlError); return; }
+
+    setLoading(true);
+    try {
+      const payload = { url: normalised };
+      if (customAlias.trim()) payload.customAlias = customAlias.trim();
+      const created = await createShortUrl(payload);
+      setResult(created);
+      setUrl("");
+      setCustomAlias("");
+      setShowAlias(false);
+    } catch (err) {
+      const suggestions = err.raw?.response?.data?.suggestions;
+      setError(
+        suggestions?.length
+          ? `${err.message}. Try: ${suggestions.slice(0, 3).join(", ")}`
+          : err.message || "Could not shorten URL. Please try again."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    const ok = await copyText(result.shortUrl);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  };
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center gap-6 px-6 text-center">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-        Shorten. Share. <span className="text-indigo-600 dark:text-indigo-400">Track.</span>
-      </h1>
-      <p className="text-lg text-gray-600 dark:text-gray-400">
-        A fast, analytics-rich URL shortener. Create short links, generate QR codes,
-        and watch the clicks roll in.
-      </p>
-      <div className="flex gap-3">
-        <Button onClick={() => navigate(ROUTES.REGISTER)}>
-          Get started
-        </Button>
-        <Button variant="secondary" onClick={() => navigate(ROUTES.LOGIN)}>
-          Log in
-        </Button>
-      </div>
-    </main>
+    <div className="min-h-screen">
+      {/* ── Hero Section ── */}
+      <section className="relative overflow-hidden hero-bg pt-32 pb-24 px-4 sm:px-6">
+        {/* Decorative blobs */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-20 dark:opacity-10 blur-3xl animate-float-slow"
+          style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
+        />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute -bottom-16 -left-16 h-80 w-80 rounded-full opacity-15 dark:opacity-10 blur-3xl animate-float-medium"
+          style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }}
+        />
+
+        <div className="relative mx-auto max-w-4xl">
+          {/* Badge */}
+          <div className="flex justify-center mb-6 animate-slide-up">
+            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
+              Free & instant — no account required
+            </span>
+          </div>
+
+          {/* Headline */}
+          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100">
+            Shorten your URLs,{" "}
+            <br className="hidden sm:block" />
+            <span className="gradient-text">amplify your reach</span>
+          </h1>
+
+          {/* Sub */}
+          <p className="mt-5 text-center text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto animate-slide-up delay-200">
+            Create branded short links, generate QR codes, and track every click
+            — all in one place. Start for free, no sign-up needed.
+          </p>
+
+          {/* ── URL Shortener Form ── */}
+          <div className="mt-10 animate-slide-up delay-300">
+            {result ? (
+              // ── Result Card ──
+              <div className="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-5 sm:p-6 animate-bounce-in">
+                <div className="flex items-start gap-3 mb-4">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Your short URL is ready!</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Click the link to open, or copy it below.</p>
+                  </div>
+                </div>
+
+                {/* Short URL display */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <a
+                    href={result.shortUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 min-w-0 rounded-xl border border-emerald-300 dark:border-emerald-500/40 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline truncate"
+                  >
+                    {result.shortUrl}
+                  </a>
+                  <button
+                    onClick={handleCopy}
+                    className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      copied
+                        ? "bg-emerald-500 text-white"
+                        : "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:opacity-90"
+                    }`}
+                  >
+                    {copied ? (
+                      <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        Copied!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        Copy
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                {/* CTA row */}
+                <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
+                  {!isAuthenticated && (
+                    <button
+                      onClick={() => onOpenAuth?.("register")}
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold btn-gradient text-white"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
+                      </svg>
+                      Sign up to track clicks
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setResult(null)}
+                    className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                  >
+                    Shorten another →
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // ── Input Form ──
+              <form
+                onSubmit={handleShorten}
+                className="rounded-2xl border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-900/80 backdrop-blur p-3 sm:p-4 shadow-lg shadow-gray-200/50 dark:shadow-black/30"
+              >
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="flex-1 relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400 pointer-events-none">
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round"
+                          d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                      </svg>
+                    </div>
+                    <input
+                      id="hero-url-input"
+                      type="text"
+                      placeholder="Paste your long URL here…"
+                      value={url}
+                      onChange={(e) => setUrl(e.target.value)}
+                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 pl-10 pr-4 py-3.5 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-gray-100 placeholder:text-gray-400"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    loading={loading}
+                    size="lg"
+                    className="whitespace-nowrap"
+                  >
+                    Shorten URL
+                  </Button>
+                </div>
+
+                {/* Custom alias toggle */}
+                <div className="mt-2 px-1">
+                  <button
+                    type="button"
+                    onClick={() => setShowAlias((s) => !s)}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                  >
+                    {showAlias ? "− Hide custom alias" : "+ Add custom alias (optional)"}
+                  </button>
+                  {showAlias && (
+                    <div className="mt-2 animate-slide-up">
+                      <input
+                        id="hero-alias-input"
+                        type="text"
+                        placeholder="e.g. my-brand-link"
+                        value={customAlias}
+                        onChange={(e) => setCustomAlias(e.target.value.replace(/\s/g, "-").toLowerCase())}
+                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-gray-100 placeholder:text-gray-400"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {error && (
+                  <p className="mt-2 px-1 text-sm text-red-500 dark:text-red-400">{error}</p>
+                )}
+
+                <p className="mt-3 px-1 text-xs text-gray-400">
+                  By shortening, you agree to our{" "}
+                  <span className="text-indigo-500 cursor-pointer hover:underline">Terms of Service</span>.
+                  {!isAuthenticated && (
+                    <>{" "}
+                      <button type="button" onClick={() => onOpenAuth?.("login")} className="text-indigo-500 hover:underline">
+                        Log in
+                      </button>{" "}
+                      to track analytics.
+                    </>
+                  )}
+                </p>
+              </form>
+            )}
+          </div>
+
+          {/* Stats strip */}
+          <div className="mt-12 flex flex-wrap justify-center gap-8 sm:gap-12 animate-slide-up delay-400">
+            {STATS.map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="text-2xl font-black gradient-text">{s.value}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Features ── */}
+      <section className="py-20 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl sm:text-4xl font-black">
+              Everything you need,{" "}
+              <span className="gradient-text">nothing you don't</span>
+            </h2>
+            <p className="mt-3 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+              Simple yet powerful tools to manage all your links in one place.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            {FEATURES.map((f, i) => (
+              <div
+                key={f.title}
+                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-6 hover:-translate-y-1 hover:shadow-lg transition-all"
+                style={{ animationDelay: `${i * 100}ms` }}
+              >
+                <div className={`mb-4 h-12 w-12 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-white shadow-sm`}>
+                  {f.icon}
+                </div>
+                <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{f.title}</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── CTA Banner ── */}
+      {!isAuthenticated && (
+        <section className="py-16 px-4 sm:px-6">
+          <div className="mx-auto max-w-3xl">
+            <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center"
+              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)" }}>
+              <div aria-hidden="true" className="absolute inset-0 opacity-20"
+                style={{ backgroundImage: "radial-gradient(circle at 30% 50%, white 1px, transparent 1px), radial-gradient(circle at 70% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
+              <div className="relative">
+                <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
+                  Ready to track your links?
+                </h2>
+                <p className="text-indigo-100 mb-8 max-w-md mx-auto">
+                  Create a free account to unlock analytics, custom aliases, QR codes, and more.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                  <button
+                    onClick={() => onOpenAuth?.("register")}
+                    className="px-8 py-3.5 rounded-xl font-bold bg-white text-indigo-600 hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                  >
+                    Get started — it's free
+                  </button>
+                  <button
+                    onClick={() => onOpenAuth?.("login")}
+                    className="px-8 py-3.5 rounded-xl font-semibold text-white border-2 border-white/30 hover:border-white/60 hover:bg-white/10 transition-all"
+                  >
+                    Log in
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Footer */}
+      <footer className="py-8 px-6 border-t border-gray-100 dark:border-gray-800/60">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="h-6 w-6 rounded-lg btn-gradient flex items-center justify-center">
+              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+            </div>
+            <span className="font-bold text-sm gradient-text">Shortly</span>
+          </div>
+          <p className="text-xs text-gray-400">© 2026 Shortly. Made with ♥</p>
+        </div>
+      </footer>
+    </div>
   );
 }

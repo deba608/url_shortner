@@ -1,34 +1,109 @@
 import { useMemo } from "react";
 import { useUrls } from "@/hooks/useUrls";
-import StatCard from "@/components/dashboard/StatCard";
 import CreateUrlForm from "@/components/dashboard/CreateUrlForm";
 import RecentUrls from "@/components/dashboard/RecentUrls";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
+import Skeleton from "@/components/ui/Skeleton";
+
+function StatCard({ label, value, icon, loading, color = "indigo" }) {
+  const colors = {
+    indigo: "from-indigo-500 to-violet-600",
+    emerald: "from-emerald-400 to-teal-500",
+    amber: "from-amber-400 to-orange-500",
+    pink: "from-pink-500 to-rose-600",
+  };
+  return (
+    <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-5 hover:-translate-y-0.5 hover:shadow-md transition-all">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+          {loading ? (
+            <Skeleton className="mt-2 h-8 w-24" />
+          ) : (
+            <p className="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{value}</p>
+          )}
+        </div>
+        <div className={`flex-shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
-  useDocumentTitle("Dashboard");
   const { urls, loading, error, refetch } = useUrls();
 
-  // Derive headline stats from the already-fetched list — no extra request.
   const totalClicks = useMemo(
     () => urls.reduce((sum, u) => sum + (u.clicks || 0), 0),
     [urls]
   );
 
+  const activeToday = useMemo(() => {
+    const today = new Date().toDateString();
+    return urls.filter((u) => new Date(u.createdAt).toDateString() === today).length;
+  }, [urls]);
+
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-8 animate-fade-in">
+      {/* Page header */}
       <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-gray-500">Create and track your short links.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-gray-100">Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Create and track your short links.</p>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <StatCard label="Total URLs" value={urls.length} loading={loading} />
-        <StatCard label="Total Clicks" value={totalClicks} loading={loading} />
+      {/* Stats grid */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard
+          label="Total URLs"
+          value={urls.length}
+          loading={loading}
+          color="indigo"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Total Clicks"
+          value={totalClicks}
+          loading={loading}
+          color="emerald"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Created Today"
+          value={activeToday}
+          loading={loading}
+          color="amber"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            </svg>
+          }
+        />
+        <StatCard
+          label="Avg. Clicks"
+          value={urls.length ? Math.round(totalClicks / urls.length) : 0}
+          loading={loading}
+          color="pink"
+          icon={
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+          }
+        />
       </div>
 
-      {/* Create */}
+      {/* Create URL */}
       <CreateUrlForm onCreated={refetch} />
 
       {/* Recent */}
