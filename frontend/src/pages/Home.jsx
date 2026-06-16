@@ -97,16 +97,16 @@ export default function Home({ onOpenAuth }) {
           <div className="mt-10 animate-slide-up delay-300">
             {result ? (
               // ── Result Card ──
-              <div className="rounded-2xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-5 sm:p-6 animate-bounce-in">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 sm:p-6 animate-bounce-in">
                 <div className="flex items-start gap-3 mb-4">
-                  <div className="flex-shrink-0 h-9 w-9 rounded-xl bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+                  <div className="flex-shrink-0 h-9 w-9 rounded-lg bg-emerald-500/20 flex items-center justify-center text-emerald-400">
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
                   <div>
-                    <p className="font-semibold text-gray-900 dark:text-gray-100">Your short URL is ready!</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Click the link to open, or copy it below.</p>
+                    <p className="font-semibold text-white">Your short URL is ready!</p>
+                    <p className="text-sm text-gray-400 mt-0.5">Click the link to open, or copy it below.</p>
                   </div>
                 </div>
 
@@ -116,7 +116,7 @@ export default function Home({ onOpenAuth }) {
                     href={result.shortUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex-1 min-w-0 rounded-xl border border-emerald-300 dark:border-emerald-500/40 bg-white dark:bg-gray-900 px-4 py-2.5 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline truncate"
+                    className="flex-1 min-w-0 rounded-lg border border-emerald-500/40 bg-slate-900 px-4 py-2.5 text-sm font-semibold text-indigo-400 hover:underline truncate"
                   >
                     {result.shortUrl}
                   </a>
@@ -125,7 +125,7 @@ export default function Home({ onOpenAuth }) {
                     className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                       copied
                         ? "bg-emerald-500 text-white"
-                        : "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 hover:opacity-90"
+                        : "bg-indigo-600 text-white hover:bg-indigo-500"
                     }`}
                   >
                     {copied ? (
@@ -161,7 +161,7 @@ export default function Home({ onOpenAuth }) {
                   )}
                   <button
                     onClick={() => setResult(null)}
-                    className="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                    className="text-sm text-gray-400 hover:text-gray-200 transition-colors"
                   >
                     Shorten another →
                   </button>
@@ -171,7 +171,7 @@ export default function Home({ onOpenAuth }) {
               // ── Input Form ──
               <form
                 onSubmit={handleShorten}
-                className="rounded-2xl border border-gray-200 dark:border-gray-700/60 bg-white dark:bg-gray-900/80 backdrop-blur p-3 sm:p-4 shadow-lg shadow-gray-200/50 dark:shadow-black/30"
+                className="rounded-xl border border-white/10 bg-slate-900/80 backdrop-blur p-3 sm:p-4 shadow-lg shadow-black/30"
               >
                 <div className="flex flex-col sm:flex-row gap-2">
                   <div className="flex-1 relative">
@@ -187,7 +187,7 @@ export default function Home({ onOpenAuth }) {
                       placeholder="Paste your long URL here…"
                       value={url}
                       onChange={(e) => setUrl(e.target.value)}
-                      className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 pl-10 pr-4 py-3.5 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-gray-100 placeholder:text-gray-400"
+                      className="w-full rounded-lg border border-white/10 bg-slate-950 pl-10 pr-4 py-3.5 text-sm text-white outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder:text-gray-500"
                     />
                   </div>
                   <Button
@@ -205,7 +205,7 @@ export default function Home({ onOpenAuth }) {
                   <button
                     type="button"
                     onClick={() => setShowAlias((s) => !s)}
-                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                    className="text-xs text-indigo-400 hover:underline font-medium"
                   >
                     {showAlias ? "− Hide custom alias" : "+ Add custom alias (optional)"}
                   </button>
@@ -217,7 +217,7 @@ export default function Home({ onOpenAuth }) {
                         placeholder="e.g. my-brand-link"
                         value={customAlias}
                         onChange={(e) => setCustomAlias(e.target.value.replace(/\s/g, "-").toLowerCase())}
-                        className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-gray-100 placeholder:text-gray-400"
+                        className="w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder:text-gray-500"
                       />
                     </div>
                   )}

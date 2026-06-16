@@ -60,16 +60,15 @@ export default function CreateUrlForm({ onCreated }) {
   };
 
   return (
-    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/60 overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-        <div className="h-8 w-8 rounded-xl btn-gradient flex items-center justify-center">
-          <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+    <div className="rounded-xl border border-white/10 bg-slate-900 overflow-hidden">
+      <div className="px-6 py-4 border-b border-white/10 flex items-center gap-3">
+        <div className="h-8 w-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
           </svg>
         </div>
         <div>
-          <h2 className="font-bold text-gray-900 dark:text-gray-100">Shorten a URL</h2>
+          <h2 className="font-bold text-white">Shorten a URL</h2>
           <p className="text-xs text-gray-400">Create a new short link instantly</p>
         </div>
       </div>
@@ -77,30 +76,30 @@ export default function CreateUrlForm({ onCreated }) {
       <div className="p-6">
         {result ? (
           // Result state
-          <div className="rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-emerald-50 dark:bg-emerald-500/10 p-4 animate-bounce-in">
+          <div className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 animate-bounce-in">
             <div className="flex items-center gap-2 mb-3">
-              <div className="h-6 w-6 rounded-lg bg-emerald-100 dark:bg-emerald-500/20 flex items-center justify-center">
-                <svg className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <div className="h-6 w-6 rounded bg-emerald-500/20 flex items-center justify-center">
+                <svg className="h-3.5 w-3.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <span className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">Link created!</span>
+              <span className="text-sm font-semibold text-emerald-400">Link created!</span>
             </div>
             <div className="flex flex-col sm:flex-row gap-2">
               <a
                 href={result.shortUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 min-w-0 rounded-xl border border-emerald-200 dark:border-emerald-500/30 bg-white dark:bg-gray-900 px-3 py-2 text-sm font-semibold text-indigo-600 dark:text-indigo-400 hover:underline truncate"
+                className="flex-1 min-w-0 rounded-lg border border-emerald-500/30 bg-slate-950 px-3 py-2 text-sm font-semibold text-indigo-400 hover:underline truncate"
               >
                 {result.shortUrl}
               </a>
               <button
                 onClick={() => handleCopy(result.shortUrl)}
-                className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all ${
+                className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-all ${
                   copied
                     ? "bg-emerald-500 text-white"
-                    : "bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90"
+                    : "bg-indigo-600 text-white hover:bg-indigo-500"
                 }`}
               >
                 {copied ? "Copied!" : "Copy"}
@@ -108,7 +107,7 @@ export default function CreateUrlForm({ onCreated }) {
             </div>
             <button
               onClick={() => setResult(null)}
-              className="mt-3 text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              className="mt-3 text-xs text-gray-400 hover:text-gray-200 transition-colors"
             >
               + Shorten another
             </button>
@@ -124,7 +123,7 @@ export default function CreateUrlForm({ onCreated }) {
                   placeholder="https://example.com/very/long/url"
                   value={url}
                   onChange={(e) => setUrl(e.target.value)}
-                  className="w-full rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-4 py-3 text-sm outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 dark:text-gray-100 placeholder:text-gray-400"
+                  className="w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-all focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500 placeholder:text-gray-500"
                 />
               </div>
               <Button type="submit" loading={loading} className="sm:w-auto w-full whitespace-nowrap">
@@ -136,7 +135,7 @@ export default function CreateUrlForm({ onCreated }) {
               <button
                 type="button"
                 onClick={() => setShowAlias((s) => !s)}
-                className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline font-medium"
+                className="text-xs text-indigo-400 hover:underline font-medium"
               >
                 {showAlias ? "− Hide custom alias" : "+ Custom alias (optional)"}
               </button>
@@ -156,7 +155,7 @@ export default function CreateUrlForm({ onCreated }) {
             )}
 
             {error && (
-              <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+              <p className="text-sm text-red-400">{error}</p>
             )}
           </form>
         )}
