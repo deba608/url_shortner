@@ -16,6 +16,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  server: {
+    proxy: {
+      // Proxy all backend routes through Vite in development so there are no
+      // cross-origin (CORS) issues when the frontend runs on :5173 and the
+      // Express backend runs on :3000.
+      '/auth': 'http://localhost:3000',
+      '/shorten': 'http://localhost:3000',
+      '/user': 'http://localhost:3000',
+      '/health': 'http://localhost:3000',
+      // Short-code redirects: any /:code route not matched by the SPA
+      '/:code': 'http://localhost:3000',
+    },
+  },
   build: {
     rollupOptions: {
       output: {
