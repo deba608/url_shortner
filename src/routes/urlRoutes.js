@@ -22,8 +22,21 @@ const router = Router();
  *             properties:
  *               url:
  *                 type: string
+ *                 example: https://example.com/some/long/path
  *               customAlias:
  *                 type: string
+ *               expiresIn:
+ *                 description: "Relative expiry: a preset (7d, 30d, 90d) or a number of days. Use null to clear."
+ *                 oneOf:
+ *                   - type: string
+ *                     enum: [7d, 30d, 90d]
+ *                   - type: integer
+ *                 example: 7d
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *                 description: "Absolute expiry as an ISO-8601 timestamp in the future. Mutually exclusive with expiresIn."
+ *                 example: 2026-12-31T23:59:59.000Z
  *     responses:
  *       201:
  *         description: URL successfully shortened
@@ -67,6 +80,80 @@ router.get("/user", authenticateToken, urlController.getUserUrls);
  *         description: URL not found or unauthorized
  */
 router.get("/urls/:id/analytics", authenticateToken, urlController.getUrlAnalytics);
+
+/**
+ * @swagger
+ * /urls/{id}/qrcode:
+ *   get:
+ *     summary: Get a QR code for a shortened URL
+ *     description: Returns a base64 PNG data URL by default, or the raw PNG image with ?format=png.
+ *     tags: [URLs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: format
+ *         required: false
+ *         schema:
+ *           type: string
+ *           enum: [png]
+ *         description: When set to "png", responds with an image/png body instead of JSON.
+ *     responses:
+ *       200:
+ *         description: QR code (JSON base64 data URL, or image/png)
+ *       400:
+ *         description: Invalid URL id
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: URL not found or unauthorized
+ */
+router.get("/urls/:id/qrcode", authenticateToken, urlController.getQrCode);
+
+/**
+ * @swagger
+ * /urls/{id}/expiration:
+ *   patch:
+ *     summary: Set, change, or clear the expiration of a URL
+ *     tags: [URLs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               expiresIn:
+ *                 description: "Preset (7d, 30d, 90d) or number of days. Send null to clear expiration."
+ *                 oneOf:
+ *                   - type: string
+ *                     enum: [7d, 30d, 90d]
+ *                   - type: integer
+ *                   - type: 'null'
+ *               expiresAt:
+ *                 type: string
+ *                 format: date-time
+ *                 description: "Absolute ISO-8601 expiry in the future. Send null to clear. Mutually exclusive with expiresIn."
+ *     responses:
+ *       200:
+ *         description: Expiration updated
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: URL not found or unauthorized
+ */
+router.patch("/urls/:id/expiration", authenticateToken, urlController.updateExpiration);
 
 /**
  * @swagger
@@ -119,6 +206,8 @@ router.get("/stats/:shortCode", urlController.getUrlStats);
  *         description: Redirect to the original URL
  *       404:
  *         description: URL not found
+ *       410:
+ *         description: URL has expired
  */
 router.get("/:shortCode", urlController.redirectToUrl);
 

@@ -96,6 +96,48 @@ const getTopUrls = catchAsync(async (req, res) => {
   });
 });
 
+const getQrCode = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const { dataUrl, shortUrl, shortCode } = await urlService.getQrCode(id, userId);
+
+  // ?format=png streams the raw image; default returns the base64 data URL as JSON.
+  if (req.query.format === "png") {
+    const base64 = dataUrl.split(",")[1];
+    const buffer = Buffer.from(base64, "base64");
+    res.set("Content-Type", "image/png");
+    return res.send(buffer);
+  }
+
+  res.json({
+    status: "success",
+    data: { shortCode, shortUrl, qrCode: dataUrl },
+  });
+});
+
+const updateExpiration = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { expiresIn, expiresAt } = req.body;
+
+  const resolved = resolveExpiration({ expiresIn, expiresAt });
+  if (resolved === undefined) {
+    throw new ApiError(400, "Provide 'expiresIn' or 'expiresAt' (use null to clear expiration)");
+  }
+
+  const updated = await urlService.updateExpiration(id, userId, resolved);
+
+  res.json({
+    status: "success",
+    data: {
+      id: updated.id,
+      shortCode: updated.shortCode,
+      expiresAt: updated.expiresAt || null,
+    },
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectToUrl,
@@ -103,4 +145,6 @@ module.exports = {
   getUserUrls,
   getUrlAnalytics,
   getTopUrls,
+  getQrCode,
+  updateExpiration,
 };
