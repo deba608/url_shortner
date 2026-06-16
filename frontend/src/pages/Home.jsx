@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createShortUrl } from "@/api/urls";
 import { validateUrl } from "@/utils/validators";
 import { useAuth } from "@/hooks/useAuth";
+import Logo from "@/components/Logo";
 import Button from "@/components/ui/Button";
 
 // ── Copy to clipboard helper ─────────────────────────────────
@@ -81,14 +82,14 @@ export default function Home({ onOpenAuth }) {
 
         <div className="relative mx-auto max-w-4xl">
           {/* Headline */}
-          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-slate-900 dark:text-white">
+          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-white">
             Simple, fast{" "}
             <br className="hidden sm:block" />
             URL shortening.
           </h1>
 
           {/* Sub */}
-          <p className="mt-5 text-center text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-slide-up delay-200">
+          <p className="mt-5 text-center text-base sm:text-lg text-gray-400 max-w-xl mx-auto animate-slide-up delay-200">
             Turn long, messy URLs into clean, manageable links. Track your clicks and take control of your links today.
           </p>
 
@@ -150,7 +151,7 @@ export default function Home({ onOpenAuth }) {
                   {!isAuthenticated && (
                     <button
                       onClick={() => onOpenAuth?.("register")}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold btn-gradient text-white"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
