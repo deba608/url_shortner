@@ -97,12 +97,12 @@ export default function AuthPanel({ open, onClose, defaultTab = "login", onAuthS
         <div
           ref={panelRef}
           tabIndex={-1}
-          className="w-full max-w-md flex flex-col bg-[var(--bg-surface)] border border-[var(--border-color)] shadow-2xl rounded-xl animate-scale-in pointer-events-auto max-h-[85vh] outline-none"
+          className="w-full max-w-md flex flex-col bg-slate-900/60 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl animate-scale-in pointer-events-auto outline-none"
           role="dialog"
           aria-modal="true"
           aria-label={tab === "login" ? "Log in" : "Create account"}
         >
-          <div className="flex items-center justify-between px-6 py-4 border-b border-[var(--border-color)] flex-shrink-0">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 flex-shrink-0">
             <Logo size="sm" onClick={onClose} />
             <button
               onClick={onClose}
@@ -115,16 +115,16 @@ export default function AuthPanel({ open, onClose, defaultTab = "login", onAuthS
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto custom-scroll px-6 py-6">
-            <div className="flex rounded-md border border-[var(--border-color)] p-1 gap-1 mb-6 bg-[var(--bg-main)]">
+          <div className="flex-1 px-6 py-4">
+            <div className="flex rounded-md border border-white/10 p-1 gap-1 mb-6 bg-slate-950/50">
               {["login", "register"].map((t) => (
                 <button
                   key={t}
                   onClick={() => setTab(t)}
                   className={`flex-1 py-1.5 rounded text-sm font-semibold transition-all ${
                     tab === t
-                      ? "bg-[var(--color-primary)] text-white shadow-sm"
-                      : "text-[var(--text-muted)] hover:text-[var(--text-main)]"
+                      ? "bg-indigo-600 text-white shadow-sm"
+                      : "text-gray-400 hover:text-gray-200"
                   }`}
                 >
                   {t === "login" ? "Log in" : "Sign up"}

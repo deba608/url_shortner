@@ -3,7 +3,7 @@ import Logo from "@/components/Logo";
 export default function AuthCard({ title, subtitle, children, footer }) {
   return (
     <div className="min-h-screen flex">
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-900/40 backdrop-blur-xl border-r border-white/10">
         <div className="relative z-10 flex flex-col justify-center px-12">
           <div className="mb-12">
             <Logo size="lg" />
