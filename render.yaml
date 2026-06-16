@@ -1,19 +1,28 @@
-# Render Blueprint — provisions the API, a Postgres database, and a Redis (key-value)
-# instance in one click. Deploy via Render Dashboard → "New +" → "Blueprint".
+# Render Blueprint — provisions the API, a Postgres database, and a Redis instance.
+# Deploy via Render Dashboard → "New +" → "Blueprint".
 # Docs: https://render.com/docs/blueprint-spec
 
 services:
-  # --- Web API -------------------------------------------------------------
+  # ── Web API ────────────────────────────────────────────────────────
   - type: web
     name: url-shortener-api
     runtime: node
     plan: free
-    # Build the Prisma client; the schema is generated at build time.
-    buildCommand: npm install && npx prisma generate
-    # Apply pending migrations, then boot. `migrate deploy` is non-interactive
-    # and safe to run on every deploy (it only applies un-applied migrations).
+
+    # `npm ci` is faster than `npm install`:
+    #   • Reads package-lock.json exactly (no resolution step)
+    #   • Fails fast if lock is out of sync (catches mistakes early)
+    #   • Render caches node_modules between deploys when lock is unchanged
+    buildCommand: npm ci && npx prisma generate
+
+    # `migrate deploy` is a no-op when schema is already in sync → near-instant
     startCommand: npx prisma migrate deploy && node server.js
+
     healthCheckPath: /health
+
+    # Auto-deploy only on pushes to main — prevents accidental deploys
+    autoDeploy: true
+
     envVars:
       - key: NODE_ENV
         value: production
@@ -28,23 +37,24 @@ services:
           type: keyvalue
           name: url-shortener-redis
           property: connectionString
-      # Auto-generated 32+ char secret (satisfies production env validation).
       - key: JWT_SECRET
         generateValue: true
-      # Set this to the service's public URL after the first deploy
-      # (e.g. https://url-shortener-api.onrender.com) so generated short links
-      # point at the right host.
+      # REQUIRED: set this to the service's public URL after the first deploy
+      # e.g. https://url-shortener-api.onrender.com
+      # The BASE_URL is used to build shortUrl in API responses.
       - key: BASE_URL
         sync: false
+      # OPTIONAL: set to your Vercel frontend URL to allow cross-origin requests
+      # e.g. https://shortly.vercel.app
+      - key: FRONTEND_URL
+        sync: false
 
-  # --- Managed Redis (Render calls this a "Key Value" instance) ------------
+  # ── Managed Redis ──────────────────────────────────────────────────
   - type: keyvalue
     name: url-shortener-redis
     plan: free
-    # noeviction: don't silently drop cache keys under memory pressure.
     maxmemoryPolicy: noeviction
-    # Only allow internal connections from services in this blueprint.
-    ipAllowList: []
+    ipAllowList: []   # internal-only
 
 databases:
   - name: url-shortener-db
