@@ -1,5 +1,6 @@
 const { nanoid } = require("nanoid");
 const prisma = require("../config/database");
+const redisClient = require("../config/redis");
 const ApiError = require("../utils/ApiError");
 const { SHORT_CODE_LENGTH, SUGGESTION_COUNT } = require("../utils/constants");
 
@@ -84,6 +85,17 @@ const getUserUrls = async (userId) => {
 };
 
 const getUrlByShortCode = async (shortCode) => {
+  // 1. Before querying PostgreSQL, check Redis
+  const cachedUrl = await redisClient.get(shortCode);
+
+  // 2. If Redis contains the URL
+  if (cachedUrl) {
+    console.log("CACHE HIT");
+    return JSON.parse(cachedUrl); // Return parsed JSON object immediately
+  }
+
+  // 3. If Redis does not contain the URL (CACHE MISS)
+  console.log("CACHE MISS");
   const url = await prisma.url.findUnique({
     where: { shortCode },
   });
@@ -91,6 +103,10 @@ const getUrlByShortCode = async (shortCode) => {
   if (!url) {
     throw new ApiError(404, "URL not found");
   }
+
+  // 4. Store the result in Redis with a TTL of 1 hour (3600 seconds)
+  // Note: We use the ioredis string argument format ("EX", 3600)
+  await redisClient.set(shortCode, JSON.stringify(url), "EX", 3600);
 
   return url;
 };
