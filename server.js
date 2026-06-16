@@ -4,7 +4,7 @@ const redisClient = require("./src/config/redis");
 
 async function startServer() {
   try {
-    await redisClient.connect();
+    await redisClient.ping();
     console.log("Redis connected successfully.");
     
     app.listen(config.port, () => {
