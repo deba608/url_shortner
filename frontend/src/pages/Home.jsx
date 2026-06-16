@@ -4,42 +4,6 @@ import { validateUrl } from "@/utils/validators";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/ui/Button";
 
-// ── Feature card data ────────────────────────────────────────
-const FEATURES = [
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
-    ),
-    gradient: "from-amber-400 to-orange-500",
-    title: "Instant & Free",
-    desc: "No sign-up needed. Paste your long URL and get a short one in milliseconds.",
-  },
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round"
-          d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-      </svg>
-    ),
-    gradient: "from-indigo-500 to-violet-600",
-    title: "Real-time Analytics",
-    desc: "Track every click with detailed analytics — daily trends, unique visitors, QR codes.",
-  },
-  {
-    icon: (
-      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-        <path strokeLinecap="round" strokeLinejoin="round"
-          d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-      </svg>
-    ),
-    gradient: "from-emerald-400 to-teal-500",
-    title: "Custom Aliases",
-    desc: "Brand your links with custom slugs. Set expiration dates. Full control.",
-  },
-];
-
 const STATS = [
   { value: "10K+", label: "Links Created" },
   { value: "99.9%", label: "Uptime" },
@@ -108,7 +72,7 @@ export default function Home({ onOpenAuth }) {
   return (
     <div className="min-h-screen">
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden hero-bg pt-32 pb-24 px-4 sm:px-6">
+      <section className="relative overflow-hidden hero-bg pt-32 pb-16 px-4 sm:px-6">
         {/* Decorative blobs */}
         <div
           aria-hidden="true"
@@ -122,14 +86,6 @@ export default function Home({ onOpenAuth }) {
         />
 
         <div className="relative mx-auto max-w-4xl">
-          {/* Badge */}
-          <div className="flex justify-center mb-6 animate-slide-up">
-            <span className="inline-flex items-center gap-2 rounded-full border border-indigo-200 dark:border-indigo-500/30 bg-indigo-50 dark:bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-700 dark:text-indigo-300">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-500 animate-pulse" />
-              Free & instant — no account required
-            </span>
-          </div>
-
           {/* Headline */}
           <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100">
             Shorten your URLs,{" "}
@@ -304,72 +260,6 @@ export default function Home({ onOpenAuth }) {
           </div>
         </div>
       </section>
-
-      {/* ── Features ── */}
-      <section className="py-20 px-4 sm:px-6">
-        <div className="mx-auto max-w-5xl">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-black">
-              Everything you need,{" "}
-              <span className="gradient-text">nothing you don't</span>
-            </h2>
-            <p className="mt-3 text-gray-500 dark:text-gray-400 max-w-md mx-auto">
-              Simple yet powerful tools to manage all your links in one place.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-            {FEATURES.map((f, i) => (
-              <div
-                key={f.title}
-                className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-6 hover:-translate-y-1 hover:shadow-lg transition-all"
-                style={{ animationDelay: `${i * 100}ms` }}
-              >
-                <div className={`mb-4 h-12 w-12 rounded-2xl bg-gradient-to-br ${f.gradient} flex items-center justify-center text-white shadow-sm`}>
-                  {f.icon}
-                </div>
-                <h3 className="font-bold text-gray-900 dark:text-gray-100 mb-2">{f.title}</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">{f.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ── CTA Banner ── */}
-      {!isAuthenticated && (
-        <section className="py-16 px-4 sm:px-6">
-          <div className="mx-auto max-w-3xl">
-            <div className="relative overflow-hidden rounded-3xl p-8 sm:p-12 text-center"
-              style={{ background: "linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899)" }}>
-              <div aria-hidden="true" className="absolute inset-0 opacity-20"
-                style={{ backgroundImage: "radial-gradient(circle at 30% 50%, white 1px, transparent 1px), radial-gradient(circle at 70% 80%, white 1px, transparent 1px)", backgroundSize: "40px 40px" }} />
-              <div className="relative">
-                <h2 className="text-3xl sm:text-4xl font-black text-white mb-4">
-                  Ready to track your links?
-                </h2>
-                <p className="text-indigo-100 mb-8 max-w-md mx-auto">
-                  Create a free account to unlock analytics, custom aliases, QR codes, and more.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                  <button
-                    onClick={() => onOpenAuth?.("register")}
-                    className="px-8 py-3.5 rounded-xl font-bold bg-white text-indigo-600 hover:bg-indigo-50 transition-all shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                  >
-                    Get started — it's free
-                  </button>
-                  <button
-                    onClick={() => onOpenAuth?.("login")}
-                    className="px-8 py-3.5 rounded-xl font-semibold text-white border-2 border-white/30 hover:border-white/60 hover:bg-white/10 transition-all"
-                  >
-                    Log in
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-      )}
 
       {/* Footer */}
       <footer className="py-8 px-6 border-t border-gray-100 dark:border-gray-800/60">
