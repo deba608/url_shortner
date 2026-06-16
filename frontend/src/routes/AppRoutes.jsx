@@ -15,6 +15,7 @@ const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const MyUrls = lazy(() => import("@/pages/MyUrls"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
+const Redirect = lazy(() => import("@/pages/Redirect"));
 
 // Redirects authenticated users away from auth pages.
 function PublicOnly({ children }) {
@@ -85,6 +86,7 @@ export default function AppRoutes({ onOpenAuth }) {
           <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
         </Route>
 
+        <Route path="/:shortCode" element={<Redirect />} />
         <Route path="*" element={<WithNavbar onOpenAuth={onOpenAuth}><NotFound /></WithNavbar>} />
       </Routes>
     </Suspense>
