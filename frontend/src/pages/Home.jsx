@@ -25,9 +25,6 @@ export default function Home() {
           Log in
         </Link>
       </div>
-      <p className="mt-8 text-xs text-gray-400">
-        Phase&nbsp;1 scaffold · routing + Tailwind + Axios wired ✓
-      </p>
     </main>
   );
 }
