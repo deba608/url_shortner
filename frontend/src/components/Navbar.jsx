@@ -59,8 +59,8 @@ export default function Navbar({ onOpenAuth }) {
           <nav
             className={`flex items-center justify-between rounded-full px-5 sm:px-6 h-14 md:h-16 transition-all duration-300 ${
               scrolled
-                ? "bg-white/30 dark:bg-black/35 border border-white/20 dark:border-white/10 shadow-lg backdrop-blur-md"
-                : "bg-white/15 dark:bg-black/20 border border-white/15 dark:border-white/5 shadow-md backdrop-blur-md"
+                ? "bg-white/70 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/50 shadow-lg backdrop-blur-md"
+                : "bg-white/40 dark:bg-slate-950/30 border border-white/30 dark:border-slate-800/30 shadow-md backdrop-blur-md"
             }`}
           >
             {/* Logo */}
@@ -68,13 +68,13 @@ export default function Navbar({ onOpenAuth }) {
               to={ROUTES.HOME}
               className="flex items-center gap-2 text-xl font-black tracking-tight shrink-0"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl btn-gradient shadow-sm">
-                <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm">
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round"
                     d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
               </div>
-              <span className="gradient-text">Shortly</span>
+              <span className="text-gray-950 dark:text-white">Shortly</span>
             </Link>
 
             {/* Desktop nav links */}

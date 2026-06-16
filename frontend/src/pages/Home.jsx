@@ -248,15 +248,15 @@ export default function Home({ onOpenAuth }) {
 
       {/* Footer */}
       <footer className="mt-auto py-8 px-4 sm:px-6">
-        <div className="mx-auto max-w-5xl rounded-2xl bg-white/10 dark:bg-black/20 border border-white/15 dark:border-white/5 shadow-lg backdrop-blur-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="mx-auto max-w-5xl rounded-2xl bg-white/40 dark:bg-slate-950/30 border border-white/30 dark:border-slate-800/30 shadow-lg backdrop-blur-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg btn-gradient flex items-center justify-center shadow-sm">
-              <svg className="h-3 w-3 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <div className="h-6 w-6 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 flex items-center justify-center shadow-sm">
+              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
                 <path strokeLinecap="round" strokeLinejoin="round"
                   d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
               </svg>
             </div>
-            <span className="font-bold text-sm gradient-text">Shortly</span>
+            <span className="font-bold text-sm text-gray-950 dark:text-white">Shortly</span>
           </div>
           <p className="text-xs text-gray-500 dark:text-gray-400">© 2026 Shortly. Made with ♥ by Dev</p>
         </div>
