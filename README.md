@@ -1,10 +1,6 @@
 # 🔗 URL Shortener API
 
 A production-style URL shortening service with authentication, click analytics, QR codes, link expiration, Redis caching, and full container/cloud deployment. Built to demonstrate end-to-end backend engineering — from schema design to observability.
-
-> **Live demo:** `https://<your-service>.onrender.com` · **API docs (Swagger):** `https://<your-service>.onrender.com/api-docs`
-> _(replace with your Render URL after deploying — see [Deployment](#-deployment))_
-
 ---
 
 ## ✨ Features
