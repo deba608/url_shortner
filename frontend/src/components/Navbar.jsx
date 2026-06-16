@@ -55,12 +55,12 @@ export default function Navbar({ onOpenAuth }) {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6">
-        <div className="mx-auto mt-3 max-w-6xl">
+        <div className="mx-auto mt-4 max-w-6xl">
           <nav
-            className={`flex items-center justify-between rounded-full px-4 sm:px-6 h-14 md:h-16 transition-all duration-300 ${
+            className={`flex items-center justify-between rounded-full px-5 sm:px-6 h-14 md:h-16 transition-all duration-300 ${
               scrolled
-                ? "bg-white/80 dark:bg-gray-950/85 border border-gray-200/60 dark:border-gray-700/50 shadow-lg backdrop-blur-xl"
-                : "bg-white/70 dark:bg-gray-950/75 border border-white/20 dark:border-gray-700/30 shadow-md backdrop-blur-md"
+                ? "bg-white/30 dark:bg-black/35 border border-white/20 dark:border-white/10 shadow-lg backdrop-blur-md"
+                : "bg-white/15 dark:bg-black/20 border border-white/15 dark:border-white/5 shadow-md backdrop-blur-md"
             }`}
           >
             {/* Logo */}
@@ -120,7 +120,7 @@ export default function Navbar({ onOpenAuth }) {
               <ThemeToggle />
               <button
                 onClick={() => setMobileOpen((o) => !o)}
-                className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                className="rounded-xl p-2 text-gray-600 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:bg-gray-800/50 transition-colors"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
                 <div className="flex flex-col gap-1.5 w-5">
@@ -154,9 +154,9 @@ export default function Navbar({ onOpenAuth }) {
             ? "opacity-100 pointer-events-auto translate-y-0"
             : "opacity-0 pointer-events-none -translate-y-4"
         }`}
-        style={{ top: "76px" }}
+        style={{ top: "80px" }}
       >
-        <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700/50 dark:bg-gray-900 overflow-hidden">
+        <div className="mx-auto max-w-6xl rounded-2xl border border-white/10 bg-white/70 dark:bg-black/75 shadow-2xl backdrop-blur-lg overflow-hidden">
           <div className="p-4 flex flex-col gap-1">
             {isAuthenticated ? (
               <>
