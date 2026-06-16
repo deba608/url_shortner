@@ -9,7 +9,7 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/url_shortener
       - REDIS_URL=redis://redis:6379
       - PORT=3000
-      - BASE_URL=http://localhost:3000
+      - BASE_URL=http://127.0.0.1:3000
       - NODE_ENV=development
       # IMPORTANT: Change this in production
       - JWT_SECRET=your-super-secret-jwt-key-change-in-production
