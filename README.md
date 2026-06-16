@@ -18,6 +18,7 @@ A production-style URL shortening service with authentication, click analytics, 
 | **Expiration** | Expire links by date or after N days; expired links return `410 Gone` |
 | **Performance** | Redis read-through cache for redirects with expiry-aware TTL |
 | **Security** | Rate limiting, fail-fast env validation, ownership checks |
+| **Frontend/UI**| Responsive React SPA, Tailwind CSS v4, seamless animated global gradients, refined one-page landing layout |
 | **Ops** | `/health` readiness probe (DB + Redis), structured logging, request logging, graceful shutdown |
 | **Docs & Tests** | Swagger/OpenAPI, Jest + Supertest test suites |
 
@@ -25,10 +26,12 @@ A production-style URL shortening service with authentication, click analytics, 
 
 ## 🧱 Tech Stack
 
+- **Frontend:** React, Vite, Tailwind CSS v4, React Router
 - **Runtime:** Node.js 20, Express 5
 - **Database:** PostgreSQL + Prisma ORM 7 (with `@prisma/adapter-pg`)
 - **Cache:** Redis (ioredis)
 - **Auth:** JWT, bcrypt
+- **Email:** Resend API
 - **Logging:** Winston (structured) + Morgan (HTTP access)
 - **Docs:** swagger-jsdoc + swagger-ui-express
 - **Testing:** Jest, Supertest
@@ -218,6 +221,8 @@ Key Blueprint choices:
 | `JWT_SECRET` | ✅ | JWT signing secret (≥ 32 chars in production) |
 | `REDIS_URL` | prod | Redis connection string (defaults to `redis://localhost:6379` in dev) |
 | `BASE_URL` | recommended | Public origin used to build short URLs |
+| `RESEND_API_KEY` | prod | API key for sending emails via Resend (required for real OTP delivery) |
+| `EMAIL_FROM` | prod | Sender email address (e.g. `Shortly <onboarding@resend.dev>`) |
 | `PORT` | — | Listen port (default `3000`) |
 | `NODE_ENV` | — | `development` / `production` |
 | `LOG_LEVEL` | — | Winston level override (`info`, `debug`, …) |
