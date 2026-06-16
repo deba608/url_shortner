@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { NavLink, Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
-import ThemeToggle from "@/components/ThemeToggle";
+
 import Button from "@/components/ui/Button";
 
 const LinkIcon = () => (
@@ -59,22 +59,20 @@ export default function Navbar({ onOpenAuth }) {
           <nav
             className={`flex items-center justify-between rounded-full px-5 sm:px-6 h-14 md:h-16 transition-all duration-300 ${
               scrolled
-                ? "bg-white/70 dark:bg-slate-950/45 border border-slate-200/50 dark:border-slate-800/50 shadow-lg backdrop-blur-md"
-                : "bg-white/40 dark:bg-slate-950/30 border border-white/30 dark:border-slate-800/30 shadow-md backdrop-blur-md"
+                ? "bg-black/20 border border-white/10 shadow-lg backdrop-blur-xl"
+                : "bg-black/10 border border-white/5 shadow-md backdrop-blur-xl"
             }`}
           >
             {/* Logo */}
             <Link
               to={ROUTES.HOME}
-              className="flex items-center gap-2 text-xl font-black tracking-tight shrink-0"
+              className="flex items-center gap-2.5 text-xl font-black tracking-tight shrink-0"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gray-900 text-white dark:bg-white dark:text-gray-900 shadow-sm">
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                  <path strokeLinecap="round" strokeLinejoin="round"
-                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                </svg>
-              </div>
-              <span className="text-gray-950 dark:text-white">Shortly</span>
+              <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round"
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+              </svg>
+              <span className="text-white">Shortly</span>
             </Link>
 
             {/* Desktop nav links */}
@@ -93,7 +91,6 @@ export default function Navbar({ onOpenAuth }) {
 
             {/* Desktop right side */}
             <div className="hidden md:flex items-center gap-3">
-              <ThemeToggle />
               {isAuthenticated ? (
                 <>
                   <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
@@ -117,7 +114,6 @@ export default function Navbar({ onOpenAuth }) {
 
             {/* Mobile right side */}
             <div className="flex md:hidden items-center gap-2">
-              <ThemeToggle />
               <button
                 onClick={() => setMobileOpen((o) => !o)}
                 className="rounded-xl p-2 text-gray-600 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:bg-gray-800/50 transition-colors"
@@ -156,7 +152,7 @@ export default function Navbar({ onOpenAuth }) {
         }`}
         style={{ top: "80px" }}
       >
-        <div className="mx-auto max-w-6xl rounded-2xl border border-white/10 bg-white/70 dark:bg-black/75 shadow-2xl backdrop-blur-lg overflow-hidden">
+        <div className="mx-auto max-w-6xl rounded-2xl border border-white/10 bg-black/40 shadow-2xl backdrop-blur-xl overflow-hidden">
           <div className="p-4 flex flex-col gap-1">
             {isAuthenticated ? (
               <>

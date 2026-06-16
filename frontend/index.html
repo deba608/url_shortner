@@ -6,18 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Shortly — a fast, analytics-rich URL shortener. Create short links, generate QR codes, and track clicks." />
     <title>Shortly — URL Shortener</title>
-    <script>
-      // Apply the saved/OS theme before first paint to avoid a light-mode flash.
-      (function () {
-        try {
-          var saved = localStorage.getItem("url_shortener_theme");
-          var dark = saved
-            ? saved === "dark"
-            : window.matchMedia("(prefers-color-scheme: dark)").matches;
-          if (dark) document.documentElement.classList.add("dark");
-        } catch (e) {}
-      })();
-    </script>
+    <script>document.documentElement.classList.add("dark");</script>
   </head>
   <body>
     <div id="root"></div>

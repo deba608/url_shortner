@@ -66,31 +66,30 @@ export default function Home({ onOpenAuth }) {
   return (
     <div className="min-h-screen">
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden hero-bg pt-20 pb-16 px-4 sm:px-6">
+      <section className="relative overflow-hidden pt-20 pb-16 px-4 sm:px-6">
         {/* Decorative blobs */}
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-20 dark:opacity-10 blur-3xl animate-float-slow"
+          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-10 blur-3xl animate-float-slow"
           style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
         />
         <div
           aria-hidden="true"
-          className="pointer-events-none absolute -bottom-16 -left-16 h-80 w-80 rounded-full opacity-15 dark:opacity-10 blur-3xl animate-float-medium"
+          className="pointer-events-none absolute -bottom-16 -left-16 h-80 w-80 rounded-full opacity-10 blur-3xl animate-float-medium"
           style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }}
         />
 
         <div className="relative mx-auto max-w-4xl">
           {/* Headline */}
-          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100">
-            Shorten your URLs,{" "}
+          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-slate-900 dark:text-white">
+            Simple, fast{" "}
             <br className="hidden sm:block" />
-            <span className="gradient-text">amplify your reach</span>
+            URL shortening.
           </h1>
 
           {/* Sub */}
-          <p className="mt-5 text-center text-base sm:text-lg text-gray-500 dark:text-gray-400 max-w-xl mx-auto animate-slide-up delay-200">
-            Create branded short links, generate QR codes, and track every click
-            — all in one place. Start for free, no sign-up needed.
+          <p className="mt-5 text-center text-base sm:text-lg text-slate-500 dark:text-slate-400 max-w-xl mx-auto animate-slide-up delay-200">
+            Turn long, messy URLs into clean, manageable links. Track your clicks and take control of your links today.
           </p>
 
           {/* ── URL Shortener Form ── */}
@@ -247,18 +246,16 @@ export default function Home({ onOpenAuth }) {
       </section>
 
       {/* Footer */}
-      <footer className="mt-auto py-8 px-4 sm:px-6">
-        <div className="mx-auto max-w-5xl rounded-2xl bg-white/40 dark:bg-slate-950/30 border border-white/30 dark:border-slate-800/30 shadow-lg backdrop-blur-md p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <footer className="py-8 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="h-6 w-6 rounded-lg bg-gray-900 text-white dark:bg-white dark:text-gray-900 flex items-center justify-center shadow-sm">
-              <svg className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-            </div>
-            <span className="font-bold text-sm text-gray-950 dark:text-white">Shortly</span>
+            <svg className="h-4 w-4 text-gray-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round"
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+            </svg>
+            <span className="font-bold text-sm text-gray-400">Shortly</span>
           </div>
-          <p className="text-xs text-gray-500 dark:text-gray-400">© 2026 Shortly. Made with ♥ by Dev</p>
+          <p className="text-xs text-gray-600">© 2026 Shortly. Made with ♥ by Dev</p>
         </div>
       </footer>
     </div>
