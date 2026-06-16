@@ -11,13 +11,28 @@ datasource db {
 }
 
 model Url {
-  id          Int      @id @default(autoincrement())
-  originalUrl String
-  shortCode   String   @unique
-  clicks      Int      @default(0)
-  createdAt   DateTime @default(now())
-  userId      Int?
-  user        User?    @relation(fields: [userId], references: [id])
+  id           Int       @id @default(autoincrement())
+  originalUrl  String
+  shortCode    String    @unique
+  clicks       Int       @default(0)
+  createdAt    DateTime  @default(now())
+  expiresAt    DateTime?
+  userId       Int?
+  user         User?     @relation(fields: [userId], references: [id])
+  clickHistory Click[]
+
+  @@index([expiresAt])
+}
+
+model Click {
+  id        Int      @id @default(autoincrement())
+  urlId     Int
+  url       Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  clickedAt DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+
+  @@index([urlId])
 }
 
 model User {

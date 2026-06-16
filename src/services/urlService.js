@@ -1,8 +1,16 @@
 const { nanoid } = require("nanoid");
+const QRCode = require("qrcode");
 const prisma = require("../config/database");
 const redisClient = require("../config/redis");
+const config = require("../config");
 const ApiError = require("../utils/ApiError");
-const { SHORT_CODE_LENGTH, SUGGESTION_COUNT } = require("../utils/constants");
+const {
+  SHORT_CODE_LENGTH,
+  SUGGESTION_COUNT,
+  URL_CACHE_TTL,
+  QR_CACHE_TTL,
+  QR_PREFIX,
+} = require("../utils/constants");
 
 const generateSuggestions = async (baseAlias) => {
   const candidates = new Set();
@@ -37,7 +45,7 @@ const generateSuggestions = async (baseAlias) => {
   return available.slice(0, SUGGESTION_COUNT);
 };
 
-const createShortUrl = async (originalUrl, customAlias, userId) => {
+const createShortUrl = async (originalUrl, customAlias, userId, expiresAt) => {
   let shortCode;
 
   if (customAlias) {
@@ -60,6 +68,7 @@ const createShortUrl = async (originalUrl, customAlias, userId) => {
   try {
     const data = { originalUrl, shortCode };
     if (userId) data.userId = userId;
+    if (expiresAt) data.expiresAt = expiresAt;
 
     const url = await prisma.url.create({
       data,
@@ -104,27 +113,174 @@ const getUrlByShortCode = async (shortCode) => {
     throw new ApiError(404, "URL not found");
   }
 
-  // 4. Store the result in Redis with a TTL of 1 hour (3600 seconds)
-  // Note: We use the ioredis string argument format ("EX", 3600)
-  await redisClient.set(shortCode, JSON.stringify(url), "EX", 3600);
+  // 4. Store the result in Redis.
+  // Cap the TTL so the cache never outlives the URL's own expiry — otherwise an
+  // expired URL could keep serving 410-but-cached data, and conversely a stale
+  // entry could survive past expiry. We use min(default TTL, seconds-until-expiry).
+  let ttl = URL_CACHE_TTL;
+  if (url.expiresAt) {
+    const secondsUntilExpiry = Math.floor((new Date(url.expiresAt).getTime() - Date.now()) / 1000);
+    ttl = Math.min(ttl, Math.max(secondsUntilExpiry, 1));
+  }
+  await redisClient.set(shortCode, JSON.stringify(url), "EX", ttl);
 
   return url;
 };
 
-const incrementClicks = async (shortCode) => {
-  const url = await prisma.url.update({
+/**
+ * Generate (and cache) a QR code for a URL the user owns.
+ * The QR encodes the public short URL, not the original destination, so analytics
+ * and expiration still apply when the code is scanned.
+ *
+ * @returns {{ dataUrl: string, shortUrl: string, shortCode: string }}
+ */
+const getQrCode = async (urlId, userId) => {
+  const id = parseInt(urlId, 10);
+  if (Number.isNaN(id)) {
+    throw new ApiError(400, "Invalid URL id");
+  }
+
+  const url = await prisma.url.findFirst({
+    where: { id, userId },
+    select: { id: true, shortCode: true },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found or unauthorized");
+  }
+
+  const cacheKey = `${QR_PREFIX}${url.shortCode}`;
+  const shortUrl = `${config.baseUrl}/${url.shortCode}`;
+
+  // QR images are deterministic for a given short URL, so caching is safe and cheap.
+  const cached = await redisClient.get(cacheKey);
+  if (cached) {
+    return { dataUrl: cached, shortUrl, shortCode: url.shortCode };
+  }
+
+  const dataUrl = await QRCode.toDataURL(shortUrl, {
+    errorCorrectionLevel: "M",
+    margin: 2,
+    width: 300,
+  });
+
+  await redisClient.set(cacheKey, dataUrl, "EX", QR_CACHE_TTL);
+
+  return { dataUrl, shortUrl, shortCode: url.shortCode };
+};
+
+/**
+ * Update (or clear) the expiration of a URL the user owns.
+ * Invalidates the redirect cache so the new expiry takes effect immediately.
+ *
+ * @param {Date|null} expiresAt absolute expiry, or null to clear it.
+ */
+const updateExpiration = async (urlId, userId, expiresAt) => {
+  const id = parseInt(urlId, 10);
+  if (Number.isNaN(id)) {
+    throw new ApiError(400, "Invalid URL id");
+  }
+
+  const url = await prisma.url.findFirst({
+    where: { id, userId },
+    select: { id: true, shortCode: true },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found or unauthorized");
+  }
+
+  const updated = await prisma.url.update({
+    where: { id: url.id },
+    data: { expiresAt },
+  });
+
+  // Invalidate the cached redirect entry so the new expiry is honoured at once.
+  await redisClient.del(url.shortCode);
+
+  return updated;
+};
+
+const recordClick = async (shortCode, ipAddress, userAgent) => {
+  const url = await prisma.url.findUnique({
     where: { shortCode },
-    data: {
-      clicks: { increment: 1 },
+  });
+
+  if (!url) return null;
+
+  // Execute click recording and counter increment in a transaction
+  const [updatedUrl, clickRecord] = await prisma.$transaction([
+    prisma.url.update({
+      where: { id: url.id },
+      data: { clicks: { increment: 1 } },
+    }),
+    prisma.click.create({
+      data: {
+        urlId: url.id,
+        ipAddress: ipAddress || null,
+        userAgent: userAgent || null,
+      },
+    }),
+  ]);
+
+  return updatedUrl;
+};
+
+const getUrlAnalytics = async (urlId, userId) => {
+  const url = await prisma.url.findFirst({
+    where: {
+      id: parseInt(urlId),
+      userId: userId, // Ensure user owns the URL
+    },
+    include: {
+      clickHistory: {
+        orderBy: { clickedAt: 'desc' },
+        take: 100, // Limit history to last 100 clicks
+      },
     },
   });
 
-  return url;
+  if (!url) {
+    throw new ApiError(404, "URL not found or unauthorized");
+  }
+
+  const lastClick = await prisma.click.findFirst({
+    where: { urlId: url.id },
+    orderBy: { clickedAt: 'desc' },
+  });
+
+  return {
+    totalClicks: url.clicks,
+    lastAccessed: lastClick ? lastClick.clickedAt : null,
+    createdAt: url.createdAt,
+    clickHistory: url.clickHistory,
+  };
+};
+
+const getTopUrls = async (userId) => {
+  const topUrls = await prisma.url.findMany({
+    where: { userId: userId },
+    orderBy: { clicks: 'desc' },
+    take: 10,
+    select: {
+      id: true,
+      originalUrl: true,
+      shortCode: true,
+      clicks: true,
+      createdAt: true,
+    },
+  });
+
+  return topUrls;
 };
 
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
-  incrementClicks,
+  recordClick,
+  getUrlAnalytics,
+  getTopUrls,
   getUserUrls,
+  getQrCode,
+  updateExpiration,
 };
