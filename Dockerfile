@@ -24,9 +24,9 @@ RUN apk add --no-cache openssl
 
 WORKDIR /app
 
-# Copy pre-built deps from Stage 1
+# Copy pre-built deps from Stage 1 (this already includes the generated Prisma
+# client, since the schema has no custom `output` — it lives in node_modules)
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/generated ./generated
 
 # Copy source (changes on every deploy, but npm install is already cached)
 COPY . .
