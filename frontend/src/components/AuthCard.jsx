@@ -12,9 +12,7 @@ export default function AuthCard({ title, subtitle, children, footer }) {
             <h2 className="text-4xl font-black leading-tight mb-4 text-white">
               Shorten. Share.<br />Track everything.
             </h2>
-            <p className="text-gray-400 text-lg leading-relaxed max-w-xs">
-              Create branded short links, QR codes, and detailed analytics — all in one place.
-            </p>
+            
             <ul className="mt-10 flex flex-col gap-4 max-w-sm">
               {[
                 ["Custom aliases", "Choose your own memorable short codes."],
