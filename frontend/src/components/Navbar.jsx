@@ -92,7 +92,7 @@ export default function Navbar({ onOpenAuth }) {
                 </>
               ) : (
                 <>
-                  <Button variant="ghost" size="sm" onClick={() => onOpenAuth?.("login")}>
+                  <Button variant="secondary" size="sm" onClick={() => onOpenAuth?.("login")}>
                     Log in
                   </Button>
                   <Button size="sm" onClick={() => onOpenAuth?.("register")}>
