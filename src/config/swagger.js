@@ -10,7 +10,12 @@ const options = {
     },
     servers: [
       {
-        url: process.env.BASE_URL || "http://127.0.0.1:3000"
+        url: process.env.BASE_URL || "http://127.0.0.1:3000",
+        description: "Configured Server URL"
+      },
+      {
+        url: "/",
+        description: "Relative Server URL (Auto-detect)"
       }
     ]
   },
