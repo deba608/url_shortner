@@ -65,9 +65,9 @@ export default function Home({ onOpenAuth }) {
   };
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-[calc(100vh-76px)] md:h-[calc(100vh-84px)] overflow-hidden">
       {/* ── Hero Section ── */}
-      <section className="flex-1 relative pt-20 pb-8 px-4 sm:px-6">
+      <section className="flex-1 flex flex-col justify-center relative px-4 sm:px-6">
         <div className="relative mx-auto max-w-4xl">
           {/* Headline */}
           <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-[var(--text-main)]">
@@ -235,7 +235,7 @@ export default function Home({ onOpenAuth }) {
       </section>
 
       {/* Footer */}
-      <footer className="pt-16 pb-8 px-4 sm:px-6">
+      <footer className="py-6 px-4 sm:px-6">
         <div className="mx-auto max-w-5xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <p className="text-xs text-gray-500">© 2026 Shortly. All rights reserved.</p>
           <p className="text-xs text-gray-500 flex items-center gap-1.5">
