@@ -16,4 +16,14 @@ model Url {
   shortCode   String   @unique
   clicks      Int      @default(0)
   createdAt   DateTime @default(now())
+  userId      Int?
+  user        User?    @relation(fields: [userId], references: [id])
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  urls      Url[]
 }

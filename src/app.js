@@ -1,5 +1,6 @@
 const express = require("express");
 const urlRoutes = require("./routes/urlRoutes");
+const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 const notFound = require("./middlewares/notFound");
 
@@ -11,6 +12,7 @@ app.get("/", (req, res) => {
   res.send("URL Shortener API is running");
 });
 
+app.use("/auth", authRoutes);
 app.use("/", urlRoutes);
 
 app.use(notFound);

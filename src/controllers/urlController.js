@@ -4,7 +4,8 @@ const config = require("../config");
 
 const createShortUrl = catchAsync(async (req, res) => {
   const { url, customAlias } = req.body;
-  const result = await urlService.createShortUrl(url, customAlias);
+  const userId = req.user ? req.user.id : null;
+  const result = await urlService.createShortUrl(url, customAlias, userId);
 
   res.status(201).json({
     status: "success",
@@ -38,8 +39,22 @@ const getUrlStats = catchAsync(async (req, res) => {
   });
 });
 
+const getUserUrls = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const urls = await urlService.getUserUrls(userId);
+
+  res.json({
+    status: "success",
+    data: urls.map(url => ({
+      ...url,
+      shortUrl: `${config.baseUrl}/${url.shortCode}`
+    }))
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectToUrl,
   getUrlStats,
+  getUserUrls,
 };

@@ -36,7 +36,7 @@ const generateSuggestions = async (baseAlias) => {
   return available.slice(0, SUGGESTION_COUNT);
 };
 
-const createShortUrl = async (originalUrl, customAlias) => {
+const createShortUrl = async (originalUrl, customAlias, userId) => {
   let shortCode;
 
   if (customAlias) {
@@ -57,8 +57,11 @@ const createShortUrl = async (originalUrl, customAlias) => {
   }
 
   try {
+    const data = { originalUrl, shortCode };
+    if (userId) data.userId = userId;
+
     const url = await prisma.url.create({
-      data: { originalUrl, shortCode },
+      data,
     });
 
     return url;
@@ -71,6 +74,13 @@ const createShortUrl = async (originalUrl, customAlias) => {
     }
     throw err;
   }
+};
+
+const getUserUrls = async (userId) => {
+  return await prisma.url.findMany({
+    where: { userId },
+    orderBy: { createdAt: "desc" },
+  });
 };
 
 const getUrlByShortCode = async (shortCode) => {
@@ -100,4 +110,5 @@ module.exports = {
   createShortUrl,
   getUrlByShortCode,
   incrementClicks,
+  getUserUrls,
 };
