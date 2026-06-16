@@ -1,68 +1,74 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const prisma = require("../config/database");
-const config = require("../config");
+const catchAsync = require("../utils/catchAsync");
+const authService = require("../services/authService");
+const { setAuthCookie, clearAuthCookie } = require("../utils/cookies");
 
-const SALT_ROUNDS = 10;
-const JWT_SECRET = config.jwtSecret || "default_secret";
+// Shape an authenticated response: set the HTTP-only cookie AND return the token
+// in the body so both cookie-based and Bearer-based clients work.
+function sendSession(res, status, { user, token }, extra = {}) {
+  setAuthCookie(res, token);
+  res.status(status).json({ status: "success", data: { user, token, ...extra } });
+}
 
-const register = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+const register = catchAsync(async (req, res) => {
+  const { email, devCode } = await authService.register(req.body);
+  res.status(201).json({
+    status: "success",
+    message: "Verification code sent. Please check your email.",
+    data: { email, requiresVerification: true, ...(devCode ? { devCode } : {}) },
+  });
+});
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
+const verifyEmail = catchAsync(async (req, res) => {
+  const session = await authService.verifyEmail(req.body);
+  sendSession(res, 200, session);
+});
 
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-    if (existingUser) {
-      return res.status(400).json({ error: "Email already registered" });
-    }
+const resendVerification = catchAsync(async (req, res) => {
+  const { email, devCode } = await authService.resendVerification(req.body);
+  res.json({
+    status: "success",
+    message: "A new code has been sent.",
+    data: { email, ...(devCode ? { devCode } : {}) },
+  });
+});
 
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+const login = catchAsync(async (req, res) => {
+  const session = await authService.login(req.body);
+  sendSession(res, 200, session);
+});
 
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-      },
-    });
+const forgotPassword = catchAsync(async (req, res) => {
+  const { devCode } = await authService.forgotPassword(req.body);
+  // Always generic — never reveal whether the email exists.
+  res.json({
+    status: "success",
+    message: "If an account exists for that email, a reset code has been sent.",
+    data: { ...(devCode ? { devCode } : {}) },
+  });
+});
 
-    res.status(201).json({ message: "User registered successfully", userId: user.id });
-  } catch (error) {
-    next(error);
-  }
-};
+const resetPassword = catchAsync(async (req, res) => {
+  const session = await authService.resetPassword(req.body);
+  sendSession(res, 200, session);
+});
 
-const login = async (req, res, next) => {
-  try {
-    const { email, password } = req.body;
+const me = catchAsync(async (req, res) => {
+  const user = await authService.getMe(req.user.id);
+  res.json({ status: "success", data: { user } });
+});
 
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
-
-    const user = await prisma.user.findUnique({ where: { email } });
-    if (!user) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, {
-      expiresIn: "1d",
-    });
-
-    res.json({ token, userId: user.id });
-  } catch (error) {
-    next(error);
-  }
-};
+const logout = catchAsync(async (req, res) => {
+  clearAuthCookie(res);
+  res.json({ status: "success", message: "Logged out" });
+});
 
 module.exports = {
   register,
+  verifyEmail,
+  resendVerification,
   login,
+  forgotPassword,
+  resetPassword,
+  me,
+  logout,
 };

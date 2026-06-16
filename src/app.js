@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const urlRoutes = require("./routes/urlRoutes");
 const authRoutes = require("./routes/authRoutes");
@@ -33,6 +34,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(cookieParser());
 
 // Request logging: pipe morgan's HTTP access logs through winston so all logs
 // share one structured pipeline. Skip the noisy health-check route.
