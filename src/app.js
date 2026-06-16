@@ -3,10 +3,12 @@ const urlRoutes = require("./routes/urlRoutes");
 const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 const notFound = require("./middlewares/notFound");
+const rateLimiter = require("./middlewares/rateLimiter");
 
 const app = express();
 
 app.use(express.json());
+app.use(rateLimiter);
 
 app.get("/", (req, res) => {
   res.send("URL Shortener API is running");
