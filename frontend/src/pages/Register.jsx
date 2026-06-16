@@ -28,6 +28,15 @@ export default function Register({ onOpenAuth }) {
     return !next.email && !next.password && !next.confirm;
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    let error = null;
+    if (name === "email") error = validateEmail(value);
+    else if (name === "password") error = validatePassword(value);
+    else if (name === "confirm") error = form.password !== value ? "Passwords do not match" : null;
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -66,19 +75,19 @@ export default function Register({ onOpenAuth }) {
           id="email" name="email" type="email" label="Email address"
           placeholder="you@example.com"
           autoComplete="email"
-          value={form.email} onChange={onChange} error={errors.email}
+          value={form.email} onChange={onChange} onBlur={handleBlur} error={errors.email}
         />
         <Input
           id="password" name="password" type="password" label="Password"
           placeholder="At least 8 characters"
           autoComplete="new-password"
-          value={form.password} onChange={onChange} error={errors.password}
+          value={form.password} onChange={onChange} onBlur={handleBlur} error={errors.password}
         />
         <Input
           id="confirm" name="confirm" type="password" label="Confirm password"
           placeholder="Repeat your password"
           autoComplete="new-password"
-          value={form.confirm} onChange={onChange} error={errors.confirm}
+          value={form.confirm} onChange={onChange} onBlur={handleBlur} error={errors.confirm}
         />
         <Button type="submit" loading={loading} className="w-full" size="lg">
           Create account
