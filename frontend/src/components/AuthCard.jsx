@@ -14,16 +14,27 @@ export default function AuthCard({ title, subtitle, children, footer }) {
           <p className="text-gray-400 text-lg leading-relaxed max-w-xs">
             Create branded short links, QR codes, and detailed analytics — all in one place.
           </p>
-          <div className="mt-10 grid grid-cols-3 gap-6">
-            {[["10K+", "Links"], ["99.9%", "Uptime"], ["< 100ms", "Speed"]].map(([v, l]) => (
-              <div key={l} className="text-center">
-                <p className="text-2xl font-black text-white">{v}</p>
-                <p className="text-sm text-gray-400">{l}</p>
-              </div>
+          <ul className="mt-10 flex flex-col gap-4 max-w-sm">
+            {[
+              ["Custom aliases", "Choose your own memorable short codes."],
+              ["QR codes", "Generate a downloadable QR for every link."],
+              ["Click analytics", "Track total, unique, daily, and weekly clicks."],
+              ["Link expiration", "Set links to expire by date or after N days."],
+            ].map(([title, desc]) => (
+              <li key={title} className="flex items-start gap-3">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-indigo-500 text-white">
+                  <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+                <div>
+                  <p className="text-sm font-semibold text-white">{title}</p>
+                  <p className="text-sm text-gray-400">{desc}</p>
+                </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
-        <div className="absolute -bottom-20 -right-20 h-60 w-60 rounded-full bg-indigo-500/10 blur-3xl" />
       </div>
 
       <div className="flex-1 flex flex-col">

@@ -21,6 +21,9 @@ const resolveApiBaseUrl = () => {
 const axiosClient = axios.create({
   baseURL: resolveApiBaseUrl(),
   headers: { "Content-Type": "application/json" },
+  // Send the HTTP-only auth cookie on cross-origin requests (works when the API
+  // is same-site or proxied; harmless otherwise since we also send a Bearer token).
+  withCredentials: true,
 });
 
 // Attach the JWT as a Bearer token on every request (if present).
@@ -46,7 +49,14 @@ axiosClient.interceptors.response.use(
       message = "Configuration Error: VITE_API_URL is missing. Please set it in your Vercel Environment Variables to point to your Render backend.";
     }
 
-    if (status === 401 || status === 403) {
+    // Auth endpoints (login, verify, reset, /me) manage their own errors —
+    // e.g. login returns 403 for "verify your email", which must NOT trigger a
+    // global logout-and-redirect. Only force re-auth when a *protected* request
+    // is rejected with 401.
+    const url = error.config?.url || "";
+    const isAuthEndpoint = url.startsWith("/auth/");
+
+    if (status === 401 && !isAuthEndpoint) {
       clearToken();
       if (window.location.pathname !== ROUTES.LOGIN) {
         window.location.assign(ROUTES.LOGIN);
