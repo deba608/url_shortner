@@ -1,27 +1,36 @@
-import { useAuth } from "@/hooks/useAuth";
-import Button from "@/components/ui/Button";
+import { useMemo } from "react";
+import { useUrls } from "@/hooks/useUrls";
+import StatCard from "@/components/dashboard/StatCard";
+import CreateUrlForm from "@/components/dashboard/CreateUrlForm";
+import RecentUrls from "@/components/dashboard/RecentUrls";
 
-// Placeholder protected page — proves auth + route protection + logout work.
-// Real dashboard (stats, recent URLs, create form) lands in Phase 3.
 export default function Dashboard() {
-  const { user, logout } = useAuth();
+  const { urls, loading, error, refetch } = useUrls();
+
+  // Derive headline stats from the already-fetched list — no extra request.
+  const totalClicks = useMemo(
+    () => urls.reduce((sum, u) => sum + (u.clicks || 0), 0),
+    [urls]
+  );
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-10">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold">Dashboard</h1>
-          <p className="text-sm text-gray-500">
-            Signed in as <span className="font-medium">{user?.email}</span>
-          </p>
-        </div>
-        <Button variant="secondary" onClick={logout}>
-          Log out
-        </Button>
+    <div className="flex flex-col gap-8">
+      <div>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <p className="text-sm text-gray-500">Create and track your short links.</p>
       </div>
-      <p className="mt-10 rounded-xl border border-dashed border-gray-300 p-8 text-center text-sm text-gray-400 dark:border-gray-700">
-        Phase 2 ✓ — you're authenticated. Stats &amp; URL management arrive in Phase 3.
-      </p>
-    </main>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <StatCard label="Total URLs" value={urls.length} loading={loading} />
+        <StatCard label="Total Clicks" value={totalClicks} loading={loading} />
+      </div>
+
+      {/* Create */}
+      <CreateUrlForm onCreated={refetch} />
+
+      {/* Recent */}
+      <RecentUrls urls={urls} loading={loading} error={error} onRetry={refetch} />
+    </div>
   );
 }

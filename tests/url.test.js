@@ -6,6 +6,7 @@ const mockUrlFindFirst = jest.fn();
 const mockUrlFindMany = jest.fn();
 const mockUrlCreate = jest.fn();
 const mockUrlUpdate = jest.fn();
+const mockUrlDelete = jest.fn();
 
 jest.mock("../src/config/database", () => ({
   url: {
@@ -14,6 +15,7 @@ jest.mock("../src/config/database", () => ({
     findMany: (...a) => mockUrlFindMany(...a),
     create: (...a) => mockUrlCreate(...a),
     update: (...a) => mockUrlUpdate(...a),
+    delete: (...a) => mockUrlDelete(...a),
   },
 }));
 
@@ -98,5 +100,31 @@ describe("updateExpiration", () => {
   it("throws 404 when the url is not owned", async () => {
     mockUrlFindFirst.mockResolvedValue(null);
     await expect(urlService.updateExpiration("1", 1, null)).rejects.toMatchObject({ statusCode: 404 });
+  });
+});
+
+describe("deleteUrl", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("deletes an owned url and evicts its cache entries", async () => {
+    mockUrlFindFirst.mockResolvedValue({ id: 1, shortCode: "abc" });
+    mockUrlDelete.mockResolvedValue({ id: 1 });
+
+    const result = await urlService.deleteUrl("1", 1);
+
+    expect(result).toEqual({ id: 1, shortCode: "abc" });
+    expect(mockUrlDelete).toHaveBeenCalledWith({ where: { id: 1 } });
+    expect(mockRedisDel).toHaveBeenCalledWith("abc"); // redirect cache
+    expect(mockRedisDel).toHaveBeenCalledWith("qr:abc"); // qr cache
+  });
+
+  it("throws 404 when the url is not owned", async () => {
+    mockUrlFindFirst.mockResolvedValue(null);
+    await expect(urlService.deleteUrl("1", 1)).rejects.toMatchObject({ statusCode: 404 });
+    expect(mockUrlDelete).not.toHaveBeenCalled();
+  });
+
+  it("rejects a non-numeric id", async () => {
+    await expect(urlService.deleteUrl("abc", 1)).rejects.toMatchObject({ statusCode: 400 });
   });
 });

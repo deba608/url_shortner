@@ -201,6 +201,34 @@ const updateExpiration = async (urlId, userId, expiresAt) => {
   return updated;
 };
 
+/**
+ * Delete a URL the user owns. Related Click rows are removed automatically via
+ * the onDelete: Cascade relation. Also evicts the redirect + QR cache entries.
+ */
+const deleteUrl = async (urlId, userId) => {
+  const id = parseInt(urlId, 10);
+  if (Number.isNaN(id)) {
+    throw new ApiError(400, "Invalid URL id");
+  }
+
+  const url = await prisma.url.findFirst({
+    where: { id, userId },
+    select: { id: true, shortCode: true },
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found or unauthorized");
+  }
+
+  await prisma.url.delete({ where: { id: url.id } });
+
+  // Drop any cached entries for this short code so it stops resolving.
+  await redisClient.del(url.shortCode);
+  await redisClient.del(`${QR_PREFIX}${url.shortCode}`);
+
+  return { id: url.id, shortCode: url.shortCode };
+};
+
 const recordClick = async (shortCode, ipAddress, userAgent) => {
   const url = await prisma.url.findUnique({
     where: { shortCode },
@@ -306,4 +334,5 @@ module.exports = {
   getUserUrls,
   getQrCode,
   updateExpiration,
+  deleteUrl,
 };

@@ -189,6 +189,30 @@ router.patch("/urls/:id/expiration", authenticateToken, urlController.updateExpi
 
 /**
  * @swagger
+ * /urls/{id}:
+ *   delete:
+ *     summary: Delete a URL owned by the current user
+ *     tags: [URLs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: URL deleted
+ *       400:
+ *         description: Invalid URL id
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: URL not found or unauthorized
+ */
+router.delete("/urls/:id", authenticateToken, urlController.deleteUrl);
+
+/**
+ * @swagger
  * /analytics/top-urls:
  *   get:
  *     summary: Get top clicked URLs for the current user

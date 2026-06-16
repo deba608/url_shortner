@@ -138,6 +138,18 @@ const updateExpiration = catchAsync(async (req, res) => {
   });
 });
 
+const deleteUrl = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const deleted = await urlService.deleteUrl(id, userId);
+
+  res.json({
+    status: "success",
+    data: { id: deleted.id, shortCode: deleted.shortCode },
+  });
+});
+
 module.exports = {
   createShortUrl,
   redirectToUrl,
@@ -147,4 +159,5 @@ module.exports = {
   getTopUrls,
   getQrCode,
   updateExpiration,
+  deleteUrl,
 };
