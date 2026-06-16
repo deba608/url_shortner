@@ -140,8 +140,12 @@ export default function Navbar({ onOpenAuth }) {
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm md:hidden drawer-overlay"
+          className="fixed inset-0 z-30 md:hidden drawer-overlay cursor-pointer"
           onClick={() => setMobileOpen(false)}
+          role="button"
+          tabIndex={0}
+          aria-label="Close menu"
+          onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") setMobileOpen(false); }}
         />
       )}
       <div

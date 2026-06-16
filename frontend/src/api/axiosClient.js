@@ -35,11 +35,16 @@ axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
     const status = error.response?.status;
-    const message =
+    let message =
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       "Something went wrong";
+
+    // Detect Vercel 405 Method Not Allowed when VITE_API_URL is missing
+    if (status === 405 && !import.meta.env.DEV) {
+      message = "Configuration Error: VITE_API_URL is missing. Please set it in your Vercel Environment Variables to point to your Render backend.";
+    }
 
     if (status === 401 || status === 403) {
       clearToken();

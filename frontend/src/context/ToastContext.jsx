@@ -81,6 +81,7 @@ function Toaster({ toasts, onDismiss }) {
               <p className={`text-sm font-medium flex-1 ${cfg.text}`}>{t.message}</p>
               <button
                 onClick={(e) => { e.stopPropagation(); onDismiss(t.id); }}
+                aria-label="Dismiss notification"
                 className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
               >
                 <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

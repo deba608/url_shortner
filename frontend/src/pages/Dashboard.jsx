@@ -44,7 +44,7 @@ export default function Dashboard() {
   }, [urls]);
 
   return (
-    <div className="flex flex-col gap-8 animate-fade-in">
+    <div className="flex flex-col gap-6 animate-fade-in">
       {/* Page header */}
       <div>
         <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-gray-100">Dashboard</h1>

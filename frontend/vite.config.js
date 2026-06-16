@@ -18,8 +18,6 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // Proxy all known backend API paths so the browser never makes a
-      // cross-origin request from :5173 to :3000.
       '/auth': 'http://localhost:3000',
       '/shorten': 'http://localhost:3000',
       '/user': 'http://localhost:3000',
@@ -27,9 +25,21 @@ export default defineConfig({
       '/stats': 'http://localhost:3000',
       '/analytics': 'http://localhost:3000',
       '/health': 'http://localhost:3000',
-      // Short-code redirects: forward /<shortcode> to Express.
-      // Regex ensures we only proxy short alphanumeric codes and don't steal
-      // React Router paths like /login, /register, /dashboard, /urls, etc.
+      '^/[A-Za-z0-9_-]{4,12}$': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+      },
+    },
+  },
+  preview: {
+    proxy: {
+      '/auth': 'http://localhost:3000',
+      '/shorten': 'http://localhost:3000',
+      '/user': 'http://localhost:3000',
+      '/urls': 'http://localhost:3000',
+      '/stats': 'http://localhost:3000',
+      '/analytics': 'http://localhost:3000',
+      '/health': 'http://localhost:3000',
       '^/[A-Za-z0-9_-]{4,12}$': {
         target: 'http://localhost:3000',
         changeOrigin: true,

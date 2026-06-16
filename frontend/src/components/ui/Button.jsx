@@ -2,11 +2,11 @@ import Spinner from "@/components/ui/Spinner";
 
 const VARIANTS = {
   primary:
-    "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-600",
+    "bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-indigo-600 active:bg-indigo-800",
   secondary:
-    "border border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800",
+    "border border-gray-300 hover:bg-gray-100 dark:border-gray-700 dark:hover:bg-gray-800 focus-visible:outline-gray-400 active:bg-gray-200 dark:active:bg-gray-700",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600",
+    "bg-red-600 text-white hover:bg-red-700 focus-visible:outline-red-600 active:bg-red-800",
 };
 
 const SIZES = {
@@ -28,7 +28,7 @@ export default function Button({
     <button
       type="button"
       disabled={disabled || loading}
-      className={`inline-flex items-center justify-center gap-2 font-medium transition-all focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 font-medium transition-all active:scale-[0.97] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${SIZES[size]} ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {loading && <Spinner className="h-4 w-4" />}

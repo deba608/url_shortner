@@ -96,7 +96,7 @@ export default function Analytics() {
           </div>
 
           {/* Last accessed */}
-          <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-5">
+    <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-5 hover:-translate-y-0.5 hover:shadow-md transition-all">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2">Last Accessed</p>
             {loading ? (
               <Skeleton className="h-7 w-52" />

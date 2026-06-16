@@ -29,6 +29,12 @@ export default function Login({ onOpenAuth }) {
     return !next.email && !next.password;
   };
 
+  const handleBlur = (e) => {
+    const { name, value } = e.target;
+    const error = name === "email" ? validateEmail(value) : value ? null : "Password is required";
+    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+
   const onSubmit = async (e) => {
     e.preventDefault();
     setServerError("");
@@ -67,13 +73,13 @@ export default function Login({ onOpenAuth }) {
           id="email" name="email" type="email" label="Email address"
           placeholder="you@example.com"
           autoComplete="email"
-          value={form.email} onChange={onChange} error={errors.email}
+          value={form.email} onChange={onChange} onBlur={handleBlur} error={errors.email}
         />
         <Input
           id="password" name="password" type="password" label="Password"
           placeholder="Your password"
           autoComplete="current-password"
-          value={form.password} onChange={onChange} error={errors.password}
+          value={form.password} onChange={onChange} onBlur={handleBlur} error={errors.password}
         />
         <Button type="submit" loading={loading} className="w-full" size="lg">
           Log in
