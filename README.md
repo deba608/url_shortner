@@ -86,9 +86,28 @@ sequenceDiagram
 erDiagram
     User ||--o{ Url : owns
     Url  ||--o{ Click : receives
-    User { int id PK; string email UK; string password; datetime createdAt }
-    Url  { int id PK; string originalUrl; string shortCode UK; int clicks; datetime createdAt; datetime expiresAt; int userId FK }
-    Click { int id PK; int urlId FK; datetime clickedAt; string ipAddress; string userAgent }
+    User {
+        int id PK
+        string email UK
+        string password
+        datetime createdAt
+    }
+    Url {
+        int id PK
+        string originalUrl
+        string shortCode UK
+        int clicks
+        datetime createdAt
+        datetime expiresAt
+        int userId FK
+    }
+    Click {
+        int id PK
+        int urlId FK
+        datetime clickedAt
+        string ipAddress
+        string userAgent
+    }
 ```
 
 ---
