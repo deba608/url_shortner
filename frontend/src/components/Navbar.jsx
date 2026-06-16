@@ -46,7 +46,7 @@ export default function Navbar({ onOpenAuth }) {
   }, [mobileOpen]);
 
   const navLinkClass = ({ isActive }) =>
-    `focus-ring flex items-center gap-2 text-sm font-medium py-1 transition-colors ${
+    `nav-link flex items-center gap-2 text-sm font-medium py-1 transition-colors ${
       isActive
         ? "text-indigo-600 dark:text-indigo-400 active"
         : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
