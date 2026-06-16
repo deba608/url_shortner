@@ -21,7 +21,7 @@ export default function CreateUrlForm({ onCreated }) {
     setError("");
     setResult(null);
 
-    const urlError = validateUrl(url.trim());
+    const { error: urlError, normalised } = validateUrl(url.trim());
     if (urlError) {
       setError(urlError);
       return;
@@ -29,7 +29,7 @@ export default function CreateUrlForm({ onCreated }) {
 
     setLoading(true);
     try {
-      const payload = { url: url.trim() };
+      const payload = { url: normalised };
       if (customAlias.trim()) payload.customAlias = customAlias.trim();
       const created = await createShortUrl(payload);
       setResult(created);
@@ -57,7 +57,7 @@ export default function CreateUrlForm({ onCreated }) {
         <div className="flex-1">
           <Input
             id="url"
-            type="url"
+            type="text"
             placeholder="https://example.com/very/long/link"
             value={url}
             onChange={(e) => setUrl(e.target.value)}

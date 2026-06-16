@@ -14,7 +14,24 @@ const redisClient = require("./config/redis");
 
 const app = express();
 
-app.use(cors());
+// CORS — must be registered before any other middleware so preflight OPTIONS
+// requests (sent by the browser for cross-origin POSTs) are answered immediately.
+const allowedOrigins = [
+  "http://localhost:5173", // Vite dev server
+  "http://localhost:3000", // direct access / Swagger UI
+  process.env.FRONTEND_URL, // production frontend URL (set in prod .env)
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      // Allow requests with no Origin header (curl, Postman, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      cb(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Request logging: pipe morgan's HTTP access logs through winston so all logs
