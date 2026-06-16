@@ -2,8 +2,15 @@ import axios from "axios";
 import { getToken, clearToken } from "@/utils/token";
 
 const resolveApiBaseUrl = () => {
-  const configured = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const productionApiUrl = "https://url-shortner-eceq.onrender.com";
+  const configured =
+    import.meta.env.VITE_API_URL ||
+    (import.meta.env.PROD ? productionApiUrl : "http://localhost:3000");
   const trimmed = configured.replace(/\/+$/, "");
+
+  if (import.meta.env.PROD && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(trimmed)) {
+    return productionApiUrl;
+  }
 
   // This Express backend exposes routes at /auth, /user, /shorten, etc.
   // A common Vercel mistake is setting VITE_API_URL to ".../api", which makes

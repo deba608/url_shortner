@@ -1,3 +1,4 @@
+require("dotenv").config();
 const validateEnv = require("./src/config/validateEnv");
 
 // Validate environment before anything else touches it.
