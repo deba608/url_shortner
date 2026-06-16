@@ -64,9 +64,9 @@ export default function Home({ onOpenAuth }) {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {/* ── Hero Section ── */}
-      <section className="relative overflow-hidden pt-20 pb-16 px-4 sm:px-6">
+      <section className="flex-1 relative overflow-hidden pt-20 pb-16 px-4 sm:px-6">
         {/* Decorative blobs */}
         <div
           aria-hidden="true"
