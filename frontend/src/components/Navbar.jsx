@@ -2,6 +2,7 @@ import { NavLink, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import Button from "@/components/ui/Button";
+import ThemeToggle from "@/components/ThemeToggle";
 
 const linkClass = ({ isActive }) =>
   `text-sm font-medium transition ${
@@ -27,6 +28,7 @@ export default function Navbar() {
             My URLs
           </NavLink>
           <span className="hidden text-sm text-gray-400 sm:inline">{user?.email}</span>
+          <ThemeToggle />
           <Button variant="secondary" onClick={logout} className="px-3 py-1.5 text-xs">
             Log out
           </Button>

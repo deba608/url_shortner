@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createShortUrl } from "@/api/urls";
+import { useToast } from "@/hooks/useToast";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -7,6 +8,7 @@ import Button from "@/components/ui/Button";
 // Create-URL form. On success it calls onCreated() so the parent can refetch the
 // list and stats, then surfaces the freshly minted short URL inline.
 export default function CreateUrlForm({ onCreated }) {
+  const { toast } = useToast();
   const [url, setUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [error, setError] = useState("");
@@ -31,6 +33,7 @@ export default function CreateUrlForm({ onCreated }) {
       setResult(created);
       setUrl("");
       setCustomAlias("");
+      toast("Short URL created", "success");
       onCreated?.(); // refresh list + stats in the parent
     } catch (err) {
       // Backend returns alias suggestions on a 409 conflict.

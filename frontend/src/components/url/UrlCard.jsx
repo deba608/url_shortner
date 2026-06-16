@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { deleteUrl as deleteUrlRequest } from "@/api/urls";
 import { useClipboard } from "@/hooks/useClipboard";
+import { useToast } from "@/hooks/useToast";
 import { formatDate, truncate } from "@/utils/format";
 import Card from "@/components/ui/Card";
 import Button from "@/components/ui/Button";
@@ -12,6 +13,7 @@ import QrModal from "@/components/url/QrModal";
 // modal + delete state; notifies the parent via onDeleted() so the list refetches.
 export default function UrlCard({ url, onDeleted }) {
   const { copied, copy } = useClipboard();
+  const { toast } = useToast();
   const [showQr, setShowQr] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -23,9 +25,11 @@ export default function UrlCard({ url, onDeleted }) {
     try {
       await deleteUrlRequest(url.id);
       setConfirmOpen(false);
+      toast(`/${url.shortCode} deleted`, "success");
       onDeleted?.(url.id);
     } catch (err) {
       setError(err.message || "Delete failed");
+      toast("Failed to delete URL", "error");
     } finally {
       setDeleting(false);
     }
@@ -54,7 +58,14 @@ export default function UrlCard({ url, onDeleted }) {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => copy(url.shortUrl)}>
+        <Button
+          variant="secondary"
+          className="px-3 py-1.5 text-xs"
+          onClick={async () => {
+            const ok = await copy(url.shortUrl);
+            toast(ok ? "Copied to clipboard" : "Copy failed", ok ? "success" : "error");
+          }}
+        >
           {copied ? "Copied!" : "Copy"}
         </Button>
         <Button variant="secondary" className="px-3 py-1.5 text-xs" onClick={() => setShowQr(true)}>
