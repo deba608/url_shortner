@@ -32,17 +32,14 @@ export default function Navbar({ onOpenAuth }) {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
 
-  // Close mobile menu on navigation
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-  // Detect scroll for navbar background
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handler, { passive: true });
     return () => window.removeEventListener("scroll", handler);
   }, []);
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -57,83 +54,88 @@ export default function Navbar({ onOpenAuth }) {
 
   return (
     <>
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
-          scrolled || mobileOpen
-            ? "bg-white/90 dark:bg-gray-950/95 border-b border-gray-200/60 dark:border-gray-800/60 shadow-sm backdrop-blur-xl"
-            : "bg-transparent"
-        }`}
-      >
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 h-16">
-          {/* Logo */}
-          <Link
-            to={ROUTES.HOME}
-            className="flex items-center gap-2 text-xl font-black tracking-tight"
+      <header className="fixed top-0 left-0 right-0 z-40 px-4 sm:px-6">
+        <div className="mx-auto mt-3 max-w-6xl">
+          <nav
+            className={`flex items-center justify-between rounded-full px-4 sm:px-6 h-14 md:h-16 transition-all duration-300 ${
+              scrolled
+                ? "bg-white/80 dark:bg-gray-950/85 border border-gray-200/60 dark:border-gray-700/50 shadow-lg backdrop-blur-xl"
+                : "bg-white/70 dark:bg-gray-950/75 border border-white/20 dark:border-gray-700/30 shadow-md backdrop-blur-md"
+            }`}
           >
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl btn-gradient shadow-sm">
-              <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-            </div>
-            <span className="gradient-text">Shortly</span>
-          </Link>
-
-          {/* Desktop nav */}
-          <div className="hidden md:flex items-center gap-6">
-            {isAuthenticated ? (
-              <>
-                <NavLink to={ROUTES.DASHBOARD} className={navLinkClass} end>
-                  Dashboard
-                </NavLink>
-                <NavLink to={ROUTES.URLS} className={navLinkClass}>
-                  My URLs
-                </NavLink>
-              </>
-            ) : null}
-          </div>
-
-          {/* Desktop right side */}
-          <div className="hidden md:flex items-center gap-3">
-            <ThemeToggle />
-            {isAuthenticated ? (
-              <>
-                <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
-                  {user?.email}
-                </span>
-                <Button variant="secondary" size="sm" onClick={logout}>
-                  Log out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Button variant="ghost" size="sm" onClick={() => onOpenAuth?.("login")}>
-                  Log in
-                </Button>
-                <Button size="sm" onClick={() => onOpenAuth?.("register")}>
-                  Sign up free
-                </Button>
-              </>
-            )}
-          </div>
-
-          {/* Mobile right side */}
-          <div className="flex md:hidden items-center gap-2">
-            <ThemeToggle />
-            <button
-              onClick={() => setMobileOpen((o) => !o)}
-              className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
-              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            {/* Logo */}
+            <Link
+              to={ROUTES.HOME}
+              className="flex items-center gap-2 text-xl font-black tracking-tight shrink-0"
             >
-              <div className="flex flex-col gap-1.5 w-5">
-                <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
-                <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
-                <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl btn-gradient shadow-sm">
+                <svg className="h-4 w-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                </svg>
               </div>
-            </button>
-          </div>
-        </nav>
+              <span className="gradient-text">Shortly</span>
+            </Link>
+
+            {/* Desktop nav links */}
+            <div className="hidden md:flex items-center gap-6">
+              {isAuthenticated ? (
+                <>
+                  <NavLink to={ROUTES.DASHBOARD} className={navLinkClass} end>
+                    Dashboard
+                  </NavLink>
+                  <NavLink to={ROUTES.URLS} className={navLinkClass}>
+                    My URLs
+                  </NavLink>
+                </>
+              ) : null}
+            </div>
+
+            {/* Desktop right side */}
+            <div className="hidden md:flex items-center gap-3">
+              <ThemeToggle />
+              {isAuthenticated ? (
+                <>
+                  <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
+                    {user?.email}
+                  </span>
+                  <Button variant="secondary" size="sm" onClick={logout}>
+                    Log out
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <Button variant="ghost" size="sm" onClick={() => onOpenAuth?.("login")}>
+                    Log in
+                  </Button>
+                  <Button size="sm" onClick={() => onOpenAuth?.("register")}>
+                    Sign up free
+                  </Button>
+                </>
+              )}
+            </div>
+
+            {/* Mobile right side */}
+            <div className="flex md:hidden items-center gap-2">
+              <ThemeToggle />
+              <button
+                onClick={() => setMobileOpen((o) => !o)}
+                className="rounded-xl p-2 text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              >
+                <div className="flex flex-col gap-1.5 w-5">
+                  <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "translate-y-2 rotate-45" : ""}`} />
+                  <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "opacity-0" : ""}`} />
+                  <span className={`block h-0.5 bg-current rounded-full transition-all duration-300 ${mobileOpen ? "-translate-y-2 -rotate-45" : ""}`} />
+                </div>
+              </button>
+            </div>
+          </nav>
+        </div>
       </header>
+
+      {/* Spacer so content isn't hidden behind fixed navbar */}
+      <div className="h-[76px] md:h-[84px]" />
 
       {/* Mobile Drawer */}
       {mobileOpen && (
@@ -143,13 +145,14 @@ export default function Navbar({ onOpenAuth }) {
         />
       )}
       <div
-        className={`fixed top-16 left-0 right-0 z-30 md:hidden transition-all duration-300 ${
+        className={`fixed top-auto left-0 right-0 z-30 md:hidden transition-all duration-300 px-4 sm:px-6 ${
           mobileOpen
             ? "opacity-100 pointer-events-auto translate-y-0"
             : "opacity-0 pointer-events-none -translate-y-4"
         }`}
+        style={{ top: "76px" }}
       >
-        <div className="mx-4 mt-2 rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700/50 dark:bg-gray-900 overflow-hidden">
+        <div className="mx-auto max-w-6xl rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700/50 dark:bg-gray-900 overflow-hidden">
           <div className="p-4 flex flex-col gap-1">
             {isAuthenticated ? (
               <>

@@ -7,7 +7,7 @@ export default function DashboardLayout({ onOpenAuth }) {
   return (
     <div className="min-h-screen">
       <Navbar onOpenAuth={onOpenAuth} />
-      <main className="mx-auto max-w-5xl px-4 sm:px-6 pt-24 pb-12">
+      <main className="mx-auto max-w-5xl px-4 sm:px-6 pt-16 pb-12">
         <Outlet />
       </main>
     </div>
