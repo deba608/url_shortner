@@ -121,10 +121,10 @@ export default function AuthPanel({ open, onClose, defaultTab = "login", onAuthS
                 <button
                   key={t}
                   onClick={() => setTab(t)}
-                  className={`flex-1 py-1.5 rounded text-sm font-semibold transition-all ${
+                  className={`flex-1 py-1.5 rounded text-sm font-semibold transition-all border border-transparent ${
                     tab === t
-                      ? "bg-indigo-600 text-white shadow-sm"
-                      : "text-gray-400 hover:text-gray-200"
+                      ? "bg-indigo-500/30 backdrop-blur-md border-indigo-400/30 text-white shadow-sm"
+                      : "text-gray-400 hover:text-white"
                   }`}
                 >
                   {t === "login" ? "Log in" : "Sign up"}

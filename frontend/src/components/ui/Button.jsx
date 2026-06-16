@@ -2,13 +2,13 @@ import Spinner from "@/components/ui/Spinner";
 
 const VARIANTS = {
   primary:
-    "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] border border-transparent shadow-sm",
+    "bg-indigo-500/30 backdrop-blur-md text-white hover:bg-indigo-500/40 border border-indigo-400/30 shadow-sm",
   secondary:
-    "bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-white/5",
+    "bg-white/5 backdrop-blur-md border border-white/10 text-white hover:bg-white/10 shadow-sm",
   danger:
-    "bg-red-600 text-white hover:bg-red-500 shadow-sm",
+    "bg-red-500/30 backdrop-blur-md text-white hover:bg-red-500/40 border border-red-400/30 shadow-sm",
   ghost:
-    "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/5",
+    "text-gray-400 hover:text-white hover:bg-white/10",
 };
 
 const SIZES = {

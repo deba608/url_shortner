@@ -110,10 +110,10 @@ export default function Home({ onOpenAuth }) {
                   </a>
                   <button
                     onClick={handleCopy}
-                    className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    className={`flex-shrink-0 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all border ${
                       copied
-                        ? "bg-emerald-500 text-white"
-                        : "bg-indigo-600 text-white hover:bg-indigo-500"
+                        ? "bg-emerald-500/30 backdrop-blur-md border-emerald-400/30 text-white shadow-sm"
+                        : "bg-indigo-500/30 backdrop-blur-md border-indigo-400/30 text-white hover:bg-indigo-500/40 shadow-sm"
                     }`}
                   >
                     {copied ? (
@@ -139,7 +139,7 @@ export default function Home({ onOpenAuth }) {
                   {!isAuthenticated && (
                     <button
                       onClick={() => onOpenAuth?.("register")}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-600 text-white hover:bg-indigo-500 transition-colors"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-500/30 backdrop-blur-md border border-indigo-400/30 text-white hover:bg-indigo-500/40 shadow-sm transition-colors"
                     >
                       <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10" />
