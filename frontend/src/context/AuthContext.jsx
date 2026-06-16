@@ -36,9 +36,9 @@ export function AuthProvider({ children }) {
   }, []);
 
   // Persist a successful session (token in storage for Bearer fallback; the
-  // cookie is set by the backend).
-  const applySession = useCallback((session) => {
-    if (session?.token) setToken(session.token);
+  // cookie is set by the backend). `remember` chooses local vs session storage.
+  const applySession = useCallback((session, remember = true) => {
+    if (session?.token) setToken(session.token, remember);
     setUser(session.user);
     return session;
   }, []);
@@ -46,7 +46,8 @@ export function AuthProvider({ children }) {
   // Returns { user, token } on success; throws on bad credentials, and throws a
   // 403 when the email is unverified (caller routes to the OTP screen).
   const login = useCallback(
-    (credentials) => authApi.loginRequest(credentials).then(applySession),
+    (credentials, { remember = true } = {}) =>
+      authApi.loginRequest(credentials).then((s) => applySession(s, remember)),
     [applySession]
   );
 

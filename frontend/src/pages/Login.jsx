@@ -1,21 +1,24 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { validateEmail, validatePassword } from "@/utils/validators";
 import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/ui/Input";
+import PasswordInput from "@/components/ui/PasswordInput";
 import Button from "@/components/ui/Button";
 
-export default function Login({ onOpenAuth }) {
+export default function Login() {
   const { login } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
 
   const [form, setForm] = useState({ email: "", password: "" });
+  const [remember, setRemember] = useState(true);
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -29,22 +32,22 @@ export default function Login({ onOpenAuth }) {
     return !next.email && !next.password;
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    const error = name === "email" ? validateEmail(value) : value ? null : "Password is required";
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
   const onSubmit = async (e) => {
     e.preventDefault();
-    setServerError("");
     if (!validate()) return;
     setLoading(true);
     try {
-      await login(form);
+      await login(form, { remember });
+      toast("Welcome back!", "success");
       navigate(from, { replace: true });
     } catch (err) {
-      setServerError(err.message || "Login failed. Check your credentials.");
+      // 403 => account exists but email not verified: route to OTP screen.
+      if (err.status === 403) {
+        toast("Please verify your email to continue", "info");
+        navigate(ROUTES.VERIFY_OTP, { state: { email: form.email.trim() } });
+        return;
+      }
+      toast(err.message || "Login failed", "error");
     } finally {
       setLoading(false);
     }
@@ -52,37 +55,44 @@ export default function Login({ onOpenAuth }) {
 
   return (
     <AuthCard
-      title="Welcome back!"
-      subtitle="Log in to manage your short links."
+      title="Welcome back"
+      subtitle="Log in to manage your links"
       footer={
         <>
-          Don't have an account?{" "}
-           <Link to={ROUTES.REGISTER} className="font-semibold text-indigo-400 hover:underline">
-             Sign up free
-           </Link>
+          Don&apos;t have an account?{" "}
+          <Link to={ROUTES.REGISTER} className="font-semibold text-indigo-400 hover:underline">
+            Sign up
+          </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {serverError && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-            {serverError}
-          </div>
-        )}
         <Input
-          id="email" name="email" type="email" label="Email address"
+          id="email" name="email" type="email" label="Email" autoComplete="email"
           placeholder="you@example.com"
-          autoComplete="email"
-          value={form.email} onChange={onChange} onBlur={handleBlur} error={errors.email}
+          value={form.email} onChange={onChange} error={errors.email}
         />
-        <Input
-          id="password" name="password" type="password" label="Password"
-          placeholder="Your password"
-          autoComplete="current-password"
-          value={form.password} onChange={onChange} onBlur={handleBlur} error={errors.password}
+        <PasswordInput
+          id="password" name="password" autoComplete="current-password"
+          placeholder="••••••••"
+          value={form.password} onChange={onChange} error={errors.password}
+          labelAction={
+            <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs font-medium text-indigo-400 hover:underline">
+              Forgot password?
+            </Link>
+          }
         />
-        <Button type="submit" loading={loading} className="w-full" size="lg">
-          Log in
+        <label className="flex items-center gap-2 text-sm text-gray-300 select-none">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="h-4 w-4 rounded border-white/20 bg-slate-900 text-indigo-500 focus:ring-indigo-500"
+          />
+          Remember me
+        </label>
+        <Button type="submit" loading={loading} className="w-full">
+          {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
     </AuthCard>

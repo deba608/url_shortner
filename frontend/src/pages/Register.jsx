@@ -1,19 +1,21 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/useToast";
 import { validateEmail, validatePassword } from "@/utils/validators";
 import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/ui/Input";
+import PasswordInput from "@/components/ui/PasswordInput";
 import Button from "@/components/ui/Button";
 
-export default function Register({ onOpenAuth }) {
+export default function Register() {
   const { register } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
 
   const [form, setForm] = useState({ email: "", password: "", confirm: "" });
   const [errors, setErrors] = useState({});
-  const [serverError, setServerError] = useState("");
   const [loading, setLoading] = useState(false);
 
   const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -28,25 +30,18 @@ export default function Register({ onOpenAuth }) {
     return !next.email && !next.password && !next.confirm;
   };
 
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    let error = null;
-    if (name === "email") error = validateEmail(value);
-    else if (name === "password") error = validatePassword(value);
-    else if (name === "confirm") error = form.password !== value ? "Passwords do not match" : null;
-    setErrors((prev) => ({ ...prev, [name]: error }));
-  };
-
   const onSubmit = async (e) => {
     e.preventDefault();
-    setServerError("");
     if (!validate()) return;
     setLoading(true);
     try {
-      await register({ email: form.email, password: form.password });
-      navigate(ROUTES.DASHBOARD, { replace: true });
+      const res = await register({ email: form.email.trim(), password: form.password });
+      toast("Verification code sent to your email", "success");
+      // Dev mode surfaces the code so the flow is demoable without real email.
+      if (res?.devCode) toast(`Dev code: ${res.devCode}`, "info", 8000);
+      navigate(ROUTES.VERIFY_OTP, { state: { email: res.email, devCode: res.devCode } });
     } catch (err) {
-      setServerError(err.message || "Registration failed. Please try again.");
+      toast(err.message || "Registration failed", "error");
     } finally {
       setLoading(false);
     }
@@ -55,42 +50,35 @@ export default function Register({ onOpenAuth }) {
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Start shortening URLs in seconds — it's free."
+      subtitle="Start shortening in seconds"
       footer={
         <>
           Already have an account?{" "}
-           <Link to={ROUTES.LOGIN} className="font-semibold text-indigo-400 hover:underline">
-             Log in
-           </Link>
+          <Link to={ROUTES.LOGIN} className="font-semibold text-indigo-400 hover:underline">
+            Sign in
+          </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        {serverError && (
-          <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3 text-sm text-red-400">
-            {serverError}
-          </div>
-        )}
         <Input
-          id="email" name="email" type="email" label="Email address"
+          id="email" name="email" type="email" label="Email" autoComplete="email"
           placeholder="you@example.com"
-          autoComplete="email"
-          value={form.email} onChange={onChange} onBlur={handleBlur} error={errors.email}
+          value={form.email} onChange={onChange} error={errors.email}
         />
-        <Input
-          id="password" name="password" type="password" label="Password"
+        <PasswordInput
+          id="password" name="password" autoComplete="new-password"
           placeholder="At least 8 characters"
-          autoComplete="new-password"
-          value={form.password} onChange={onChange} onBlur={handleBlur} error={errors.password}
+          value={form.password} onChange={onChange} error={errors.password}
+          hint="Use 8+ characters with a mix of letters and numbers."
         />
-        <Input
-          id="confirm" name="confirm" type="password" label="Confirm password"
-          placeholder="Repeat your password"
-          autoComplete="new-password"
-          value={form.confirm} onChange={onChange} onBlur={handleBlur} error={errors.confirm}
+        <PasswordInput
+          id="confirm" name="confirm" label="Confirm password" autoComplete="new-password"
+          placeholder="Re-enter your password"
+          value={form.confirm} onChange={onChange} error={errors.confirm}
         />
-        <Button type="submit" loading={loading} className="w-full" size="lg">
-          Create account
+        <Button type="submit" loading={loading} className="w-full">
+          {loading ? "Creating account…" : "Create account"}
         </Button>
       </form>
     </AuthCard>
