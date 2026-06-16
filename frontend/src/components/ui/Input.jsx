@@ -13,7 +13,7 @@ export default function Input({
   return (
     <div className={`flex flex-col gap-1.5 ${className}`}>
       {label && (
-        <label htmlFor={id} className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        <label htmlFor={id} className="text-sm font-medium text-gray-300">
           {label}
         </label>
       )}
@@ -26,16 +26,15 @@ export default function Input({
         <input
           id={id}
           aria-invalid={!!error}
-          className={`w-full rounded-xl border bg-white px-4 py-3 text-sm outline-none transition-all
-            placeholder:text-gray-400
+          className={`w-full rounded-lg border bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-all
+            placeholder:text-gray-500
             focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
             disabled:cursor-not-allowed disabled:opacity-60
-            dark:bg-gray-800/60 dark:placeholder:text-gray-500
             ${Icon ? "pl-10" : ""}
             ${IconRight ? "pr-10" : ""}
             ${error
-              ? "border-red-400 focus:ring-red-400/50 focus:border-red-400 dark:border-red-500"
-              : "border-gray-200 dark:border-gray-700"
+              ? "border-red-500 focus:ring-red-400/50 focus:border-red-500"
+              : "border-white/10"
             }
             ${inputClassName}`}
           {...props}
@@ -46,8 +45,8 @@ export default function Input({
           </div>
         )}
       </div>
-      {error && <p className="text-xs text-red-500 dark:text-red-400">{error}</p>}
-      {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      {hint && !error && <p className="text-xs text-gray-500">{hint}</p>}
     </div>
   );
 }

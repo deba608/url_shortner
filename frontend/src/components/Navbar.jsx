@@ -48,8 +48,8 @@ export default function Navbar({ onOpenAuth }) {
   const navLinkClass = ({ isActive }) =>
     `nav-link flex items-center gap-2 text-sm font-medium py-1 transition-colors ${
       isActive
-        ? "text-indigo-600 dark:text-indigo-400 active"
-        : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
+        ? "text-indigo-400"
+        : "text-gray-400 hover:text-gray-200"
     }`;
 
   return (
@@ -83,7 +83,7 @@ export default function Navbar({ onOpenAuth }) {
             <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
                 <>
-                  <span className="text-sm text-gray-500 dark:text-gray-400 truncate max-w-[180px]">
+                  <span className="text-sm text-gray-400 truncate max-w-[180px]">
                     {user?.email}
                   </span>
                   <Button variant="secondary" size="sm" onClick={logout}>
@@ -106,7 +106,7 @@ export default function Navbar({ onOpenAuth }) {
             <div className="flex md:hidden items-center gap-2">
               <button
                 onClick={() => setMobileOpen((o) => !o)}
-                className="rounded-xl p-2 text-gray-600 hover:bg-gray-100/50 dark:text-gray-300 dark:hover:bg-gray-800/50 transition-colors"
+                className="rounded-xl p-2 text-gray-400 hover:bg-white/10 transition-colors"
                 aria-label={mobileOpen ? "Close menu" : "Open menu"}
               >
                 <div className="flex flex-col gap-1.5 w-5">
@@ -147,26 +147,26 @@ export default function Navbar({ onOpenAuth }) {
             {isAuthenticated ? (
               <>
                 <NavLink to={ROUTES.DASHBOARD} className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    isActive ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? "bg-indigo-500/10 text-indigo-400"
+                    : "text-gray-300 hover:bg-white/5"
                   }`
                 } end>
                   <HomeIcon /><span>Dashboard</span>
                 </NavLink>
                 <NavLink to={ROUTES.URLS} className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
-                    isActive ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400"
-                    : "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800"
+                  `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                    isActive ? "bg-indigo-500/10 text-indigo-400"
+                    : "text-gray-300 hover:bg-white/5"
                   }`
                 }>
                   <LinkIcon /><span>My URLs</span>
                 </NavLink>
-                <div className="mt-2 border-t border-gray-100 dark:border-gray-800 pt-3 px-2">
-                  <p className="text-xs text-gray-400 mb-2 px-2">{user?.email}</p>
+                <div className="mt-2 border-t border-white/10 pt-3 px-2">
+                  <p className="text-xs text-gray-500 mb-2 px-2">{user?.email}</p>
                   <button
                     onClick={logout}
-                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10 transition-colors"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-400 hover:bg-red-500/10 transition-colors"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
@@ -179,7 +179,7 @@ export default function Navbar({ onOpenAuth }) {
               <>
                 <button
                   onClick={() => { setMobileOpen(false); onOpenAuth?.("login"); }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-300 hover:bg-white/5 transition-colors"
                 >
                   <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
@@ -188,7 +188,7 @@ export default function Navbar({ onOpenAuth }) {
                 </button>
                 <button
                   onClick={() => { setMobileOpen(false); onOpenAuth?.("register"); }}
-                  className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold gradient-text bg-indigo-50 dark:bg-indigo-500/10 transition-colors"
+                  className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-semibold text-indigo-400 bg-indigo-500/10 transition-colors"
                 >
                   <svg className="h-5 w-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />

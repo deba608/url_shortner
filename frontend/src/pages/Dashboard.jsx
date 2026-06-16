@@ -6,23 +6,23 @@ import Skeleton from "@/components/ui/Skeleton";
 
 function StatCard({ label, value, icon, loading, color = "indigo" }) {
   const colors = {
-    indigo: "from-indigo-500 to-violet-600",
-    emerald: "from-emerald-400 to-teal-500",
-    amber: "from-amber-400 to-orange-500",
-    pink: "from-pink-500 to-rose-600",
+    indigo: "bg-indigo-500/10 text-indigo-400",
+    emerald: "bg-emerald-500/10 text-emerald-400",
+    amber: "bg-amber-500/10 text-amber-400",
+    pink: "bg-pink-500/10 text-pink-400",
   };
   return (
-    <div className="rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900/60 p-5 hover:-translate-y-0.5 hover:shadow-md transition-all">
+    <div className="rounded-xl border border-white/10 bg-slate-900 p-5 transition-all">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">{label}</p>
+          <p className="text-xs font-medium text-gray-400 uppercase tracking-wider">{label}</p>
           {loading ? (
             <Skeleton className="mt-2 h-8 w-24" />
           ) : (
-            <p className="mt-1 text-3xl font-black text-gray-900 dark:text-gray-100">{value}</p>
+            <p className="mt-1 text-3xl font-black text-white">{value}</p>
           )}
         </div>
-        <div className={`flex-shrink-0 h-10 w-10 rounded-xl bg-gradient-to-br ${colors[color]} flex items-center justify-center text-white shadow-sm`}>
+        <div className={`flex-shrink-0 h-10 w-10 rounded-lg ${colors[color]} flex items-center justify-center`}>
           {icon}
         </div>
       </div>
@@ -47,8 +47,8 @@ export default function Dashboard() {
     <div className="flex flex-col gap-6 animate-fade-in">
       {/* Page header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-gray-100">Dashboard</h1>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Create and track your short links.</p>
+        <h1 className="text-2xl sm:text-3xl font-black text-white">Dashboard</h1>
+        <p className="mt-1 text-sm text-gray-400">Create and track your short links.</p>
       </div>
 
       {/* Stats grid */}
