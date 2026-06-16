@@ -32,7 +32,7 @@ export default function Modal({ open, onClose, title, children, size = "sm" }) {
     >
       <div
         ref={panelRef}
-        className={`w-full ${sizes[size]} rounded-2xl border border-gray-200/80 bg-white p-6 shadow-2xl dark:border-gray-700/50 dark:bg-gray-900 animate-scale-in`}
+        className={`w-full ${sizes[size]} rounded-xl border border-white/10 bg-slate-900 p-6 shadow-2xl animate-scale-in`}
         onClick={(e) => e.stopPropagation()}
       >
         {title && (
@@ -40,7 +40,7 @@ export default function Modal({ open, onClose, title, children, size = "sm" }) {
             <h3 className="text-lg font-semibold">{title}</h3>
             <button
               onClick={onClose}
-              className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-200 transition-colors"
+              className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 transition-colors"
               aria-label="Close"
             >
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
