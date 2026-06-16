@@ -26,15 +26,15 @@ export default function Input({
         <input
           id={id}
           aria-invalid={!!error}
-          className={`w-full rounded-lg border bg-slate-950 px-4 py-3 text-sm text-white outline-none transition-all
-            placeholder:text-gray-500
-            focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500
+          className={`w-full rounded-md border bg-[var(--bg-main)] px-3 py-2 text-sm text-[var(--text-main)] outline-none transition-all
+            placeholder:text-[var(--text-muted)]
+            focus:ring-2 focus:ring-[var(--color-primary)]/50 focus:border-[var(--color-primary)]
             disabled:cursor-not-allowed disabled:opacity-60
-            ${Icon ? "pl-10" : ""}
-            ${IconRight ? "pr-10" : ""}
+            ${Icon ? "pl-9" : ""}
+            ${IconRight ? "pr-9" : ""}
             ${error
-              ? "border-red-500 focus:ring-red-400/50 focus:border-red-500"
-              : "border-white/10"
+              ? "border-red-500 focus:ring-red-500/50 focus:border-red-500"
+              : "border-[var(--border-color)]"
             }
             ${inputClassName}`}
           {...props}

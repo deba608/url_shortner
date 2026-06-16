@@ -2,17 +2,19 @@ import Spinner from "@/components/ui/Spinner";
 
 const VARIANTS = {
   primary:
-    "bg-indigo-600 text-white hover:bg-indigo-500 focus-visible:outline-indigo-600",
+    "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)] border border-transparent shadow-sm",
   secondary:
-    "border border-white/10 text-gray-300 hover:bg-white/5 focus-visible:outline-gray-400",
+    "bg-[var(--bg-elevated)] border border-[var(--border-color)] text-[var(--text-main)] hover:bg-white/5",
   danger:
-    "bg-red-600 text-white hover:bg-red-500 focus-visible:outline-red-600",
+    "bg-red-600 text-white hover:bg-red-500 shadow-sm",
+  ghost:
+    "text-[var(--text-muted)] hover:text-[var(--text-main)] hover:bg-white/5",
 };
 
 const SIZES = {
-  sm: "px-3 py-1.5 text-xs rounded-lg",
-  md: "px-5 py-2.5 text-sm rounded-xl",
-  lg: "px-7 py-3.5 text-base rounded-xl",
+  sm: "px-3 py-1.5 text-xs rounded-md",
+  md: "px-4 py-2 text-sm rounded-md",
+  lg: "px-5 py-2.5 text-sm rounded-md",
 };
 
 export default function Button({

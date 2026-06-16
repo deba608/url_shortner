@@ -65,31 +65,19 @@ export default function Home({ onOpenAuth }) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="flex flex-col">
       {/* ── Hero Section ── */}
-      <section className="flex-1 relative overflow-hidden pt-20 pb-16 px-4 sm:px-6">
-        {/* Decorative blobs */}
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -top-24 -right-24 h-96 w-96 rounded-full opacity-10 blur-3xl animate-float-slow"
-          style={{ background: "radial-gradient(circle, #6366f1, transparent)" }}
-        />
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute -bottom-16 -left-16 h-80 w-80 rounded-full opacity-10 blur-3xl animate-float-medium"
-          style={{ background: "radial-gradient(circle, #8b5cf6, transparent)" }}
-        />
-
+      <section className="flex-1 relative pt-20 pb-8 px-4 sm:px-6">
         <div className="relative mx-auto max-w-4xl">
           {/* Headline */}
-          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-white">
+          <h1 className="text-center text-4xl sm:text-5xl lg:text-6xl font-black leading-tight tracking-tight animate-slide-up delay-100 text-[var(--text-main)]">
             Simple, fast{" "}
             <br className="hidden sm:block" />
             URL shortening.
           </h1>
 
           {/* Sub */}
-          <p className="mt-5 text-center text-base sm:text-lg text-gray-400 max-w-xl mx-auto animate-slide-up delay-200">
+          <p className="mt-5 text-center text-base sm:text-lg text-[var(--text-muted)] max-w-xl mx-auto animate-slide-up delay-200">
             Turn long, messy URLs into clean, manageable links. Track your clicks and take control of your links today.
           </p>
 
