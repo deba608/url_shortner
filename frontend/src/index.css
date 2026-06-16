@@ -27,32 +27,19 @@ body {
   background-attachment: fixed;
 }
 
-/* ── Gradient Utilities ───────────────────────────────────── */
+/* ── Custom Scrollbar ─────────────────────────────────────── */
 
-.btn-gradient {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+.custom-scroll::-webkit-scrollbar {
+  width: 4px;
 }
 
-.btn-gradient:hover {
-  opacity: 0.92;
+.custom-scroll::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-.gradient-text {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-
-
-/* ── Glassmorphism ────────────────────────────────────────── */
-
-.glass {
-  background: rgba(17, 24, 39, 0.6);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+.custom-scroll::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 999px;
 }
 
 /* ── Drawer Overlay ───────────────────────────────────────── */

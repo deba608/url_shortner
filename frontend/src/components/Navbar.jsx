@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { NavLink, Link, useLocation } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
-
+import Logo from "@/components/Logo";
 import Button from "@/components/ui/Button";
 
 const LinkIcon = () => (
@@ -63,17 +63,7 @@ export default function Navbar({ onOpenAuth }) {
                 : "bg-black/10 border border-white/5 shadow-md backdrop-blur-xl"
             }`}
           >
-            {/* Logo */}
-            <Link
-              to={ROUTES.HOME}
-              className="flex items-center gap-2.5 text-xl font-black tracking-tight shrink-0"
-            >
-              <svg className="h-7 w-7 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round"
-                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-              </svg>
-              <span className="text-white">Shortly</span>
-            </Link>
+            <Logo size="md" />
 
             {/* Desktop nav links */}
             <div className="hidden md:flex items-center gap-6">
