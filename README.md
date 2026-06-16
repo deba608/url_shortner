@@ -12,13 +12,13 @@ A production-style URL shortening service with authentication, click analytics, 
 | Domain | Capability |
 |---|---|
 | **Core** | Shorten URLs with random or custom aliases; collision-safe alias suggestions |
-| **Auth** | JWT register/login, bcrypt password hashing, user-owned links (optional anonymous links) |
+| **Auth** | JWT, bcrypt password hashing, Email OTP Verification via Resend, Password Reset, user-owned links |
 | **Analytics** | Per-redirect click tracking: total clicks, unique visitors, daily/weekly counts, last accessed, top URLs |
 | **QR codes** | On-demand QR generation (base64 JSON or raw PNG), Redis-cached |
 | **Expiration** | Expire links by date or after N days; expired links return `410 Gone` |
 | **Performance** | Redis read-through cache for redirects with expiry-aware TTL |
 | **Security** | Rate limiting, fail-fast env validation, ownership checks |
-| **Frontend/UI**| Responsive React SPA, Tailwind CSS v4, seamless animated global gradients, refined one-page landing layout |
+| **Frontend/UI**| Responsive React SPA, Tailwind CSS v4, Recharts for data visualization, dark mode theme, seamless animated global gradients, refined layout |
 | **Ops** | `/health` readiness probe (DB + Redis), structured logging, request logging, graceful shutdown |
 | **Docs & Tests** | Swagger/OpenAPI, Jest + Supertest test suites |
 
@@ -122,8 +122,14 @@ Interactive docs at **`/api-docs`**. Summary:
 ### Auth
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/auth/register` | Register `{ email, password }` |
-| `POST` | `/auth/login` | Login → `{ token }` |
+| `POST` | `/auth/register` | Register account (sends an email-verification OTP) |
+| `POST` | `/auth/verify-otp` | Verify the signup OTP and activate the account |
+| `POST` | `/auth/resend-otp` | Re-send the email-verification OTP |
+| `POST` | `/auth/login` | Log in (sets an HTTP-only session cookie) |
+| `POST` | `/auth/forgot-password` | Request a password-reset OTP via email |
+| `POST` | `/auth/reset-password` | Reset password using a valid OTP |
+| `GET` | `/auth/me` | Get the currently authenticated user |
+| `POST` | `/auth/logout` | Log out (clears the session cookie) |
 
 ### URLs
 | Method | Path | Auth | Description |
