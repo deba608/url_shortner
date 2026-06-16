@@ -1,12 +1,15 @@
 import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "@/context/AuthContext";
 import AppRoutes from "@/routes/AppRoutes";
 
-// App shell. Providers (AuthContext, ThemeContext, React Query) wrap <AppRoutes/>
-// here as they're added in later phases.
+// App shell. AuthProvider must sit inside BrowserRouter because auth flows use
+// router hooks (navigate/redirect). ThemeProvider + React Query layer in later.
 export default function App() {
   return (
     <BrowserRouter>
-      <AppRoutes />
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </BrowserRouter>
   );
 }
