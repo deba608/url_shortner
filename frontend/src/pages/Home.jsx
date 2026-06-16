@@ -4,12 +4,6 @@ import { validateUrl } from "@/utils/validators";
 import { useAuth } from "@/hooks/useAuth";
 import Button from "@/components/ui/Button";
 
-const STATS = [
-  { value: "10K+", label: "Links Created" },
-  { value: "99.9%", label: "Uptime" },
-  { value: "< 100ms", label: "Redirect Speed" },
-];
-
 // ── Copy to clipboard helper ─────────────────────────────────
 async function copyText(text) {
   try {
@@ -249,15 +243,6 @@ export default function Home({ onOpenAuth }) {
             )}
           </div>
 
-          {/* Stats strip */}
-          <div className="mt-12 flex flex-wrap justify-center gap-8 sm:gap-12 animate-slide-up delay-400">
-            {STATS.map((s) => (
-              <div key={s.label} className="text-center">
-                <p className="text-2xl font-black gradient-text">{s.value}</p>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{s.label}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
@@ -273,7 +258,7 @@ export default function Home({ onOpenAuth }) {
             </div>
             <span className="font-bold text-sm gradient-text">Shortly</span>
           </div>
-          <p className="text-xs text-gray-400">© 2026 Shortly. Made with ♥</p>
+          <p className="text-xs text-gray-400">© 2026 Shortly. Made with ♥ by Dev</p>
         </div>
       </footer>
     </div>
