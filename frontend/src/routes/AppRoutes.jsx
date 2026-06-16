@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import DashboardLayout from "@/layouts/DashboardLayout";
+import Navbar from "@/components/Navbar";
 import Spinner from "@/components/ui/Spinner";
 
 // Lazy loaded page components
@@ -20,6 +21,16 @@ function PublicOnly({ children }) {
   const { isAuthenticated, initializing } = useAuth();
   if (initializing) return null;
   return isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : children;
+}
+
+// Wraps a page with the public Navbar (Home, 404, etc.)
+function WithNavbar({ children, onOpenAuth }) {
+  return (
+    <>
+      <Navbar onOpenAuth={onOpenAuth} />
+      {children}
+    </>
+  );
 }
 
 // Full-screen loading fallback
@@ -41,10 +52,17 @@ export default function AppRoutes({ onOpenAuth }) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Public landing — passes auth opener so the CTA buttons work */}
-        <Route path={ROUTES.HOME} element={<Home onOpenAuth={onOpenAuth} />} />
+        {/* Public landing with Navbar */}
+        <Route
+          path={ROUTES.HOME}
+          element={
+            <WithNavbar onOpenAuth={onOpenAuth}>
+              <Home onOpenAuth={onOpenAuth} />
+            </WithNavbar>
+          }
+        />
 
-        {/* Auth pages (direct navigation fallback) */}
+        {/* Auth pages have their own header (AuthCard) */}
         <Route
           path={ROUTES.LOGIN}
           element={<PublicOnly><Login onOpenAuth={onOpenAuth} /></PublicOnly>}
@@ -67,7 +85,7 @@ export default function AppRoutes({ onOpenAuth }) {
           <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
         </Route>
 
-        <Route path="*" element={<NotFound />} />
+        <Route path="*" element={<WithNavbar onOpenAuth={onOpenAuth}><NotFound /></WithNavbar>} />
       </Routes>
     </Suspense>
   );

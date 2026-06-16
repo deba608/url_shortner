@@ -11,7 +11,7 @@ export function ToastProvider({ children }) {
   }, []);
 
   const toast = useCallback(
-    (message, type = "success", duration = 3000) => {
+    (message, type = "success", duration = 3500) => {
       const id = nextId.current++;
       setToasts((list) => [...list, { id, message, type }]);
       setTimeout(() => dismiss(id), duration);
@@ -29,27 +29,68 @@ export function ToastProvider({ children }) {
   );
 }
 
-const STYLES = {
-  success: "border-green-500/30 bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200",
-  error: "border-red-500/30 bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200",
-  info: "border-indigo-500/30 bg-indigo-50 text-indigo-800 dark:bg-indigo-950 dark:text-indigo-200",
+const CONFIGS = {
+  success: {
+    bar: "bg-emerald-500",
+    icon: (
+      <svg className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    ),
+    cls: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
+    text: "text-gray-900 dark:text-gray-100",
+  },
+  error: {
+    bar: "bg-red-500",
+    icon: (
+      <svg className="h-4 w-4 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+    ),
+    cls: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
+    text: "text-gray-900 dark:text-gray-100",
+  },
+  info: {
+    bar: "bg-indigo-500",
+    icon: (
+      <svg className="h-4 w-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+    cls: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700",
+    text: "text-gray-900 dark:text-gray-100",
+  },
 };
 
-// Fixed, stacked, top-right notifications. Lives inside the provider so any
-// component can fire a toast via useToast() without prop-drilling.
 function Toaster({ toasts, onDismiss }) {
   return (
-    <div className="pointer-events-none fixed right-4 top-4 z-[100] flex w-full max-w-xs flex-col gap-2">
-      {toasts.map((t) => (
-        <div
-          key={t.id}
-          role="status"
-          onClick={() => onDismiss(t.id)}
-          className={`pointer-events-auto cursor-pointer rounded-lg border px-4 py-3 text-sm shadow-md transition ${STYLES[t.type]}`}
-        >
-          {t.message}
-        </div>
-      ))}
+    <div className="pointer-events-none fixed right-4 bottom-6 z-[100] flex flex-col gap-2 w-full max-w-sm">
+      {toasts.map((t) => {
+        const cfg = CONFIGS[t.type] || CONFIGS.info;
+        return (
+          <div
+            key={t.id}
+            role="status"
+            onClick={() => onDismiss(t.id)}
+            className={`pointer-events-auto cursor-pointer rounded-xl shadow-lg overflow-hidden animate-slide-up ${cfg.cls}`}
+          >
+            {/* Color bar */}
+            <div className={`h-0.5 ${cfg.bar}`} />
+            <div className="flex items-center gap-3 px-4 py-3">
+              <div className="flex-shrink-0">{cfg.icon}</div>
+              <p className={`text-sm font-medium flex-1 ${cfg.text}`}>{t.message}</p>
+              <button
+                onClick={(e) => { e.stopPropagation(); onDismiss(t.id); }}
+                className="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+              >
+                <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

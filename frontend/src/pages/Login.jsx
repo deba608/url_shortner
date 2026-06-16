@@ -6,14 +6,11 @@ import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
-export default function Login() {
-  useDocumentTitle("Log in");
+export default function Login({ onOpenAuth }) {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  // If the user was redirected here by ProtectedRoute, send them back afterward.
   const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
 
   const [form, setForm] = useState({ email: "", password: "" });
@@ -26,7 +23,7 @@ export default function Login() {
   const validate = () => {
     const next = {
       email: validateEmail(form.email),
-      password: validatePassword(form.password),
+      password: form.password ? null : "Password is required",
     };
     setErrors(next);
     return !next.email && !next.password;
@@ -41,7 +38,7 @@ export default function Login() {
       await login(form);
       navigate(from, { replace: true });
     } catch (err) {
-      setServerError(err.message || "Login failed");
+      setServerError(err.message || "Login failed. Check your credentials.");
     } finally {
       setLoading(false);
     }
@@ -49,32 +46,36 @@ export default function Login() {
 
   return (
     <AuthCard
-      title="Welcome back"
-      subtitle="Log in to manage your links"
+      title="Welcome back!"
+      subtitle="Log in to manage your short links."
       footer={
         <>
-          No account?{" "}
-          <Link to={ROUTES.REGISTER} className="font-medium text-indigo-600 hover:underline dark:text-indigo-400">
-            Create one
+          Don't have an account?{" "}
+          <Link to={ROUTES.REGISTER} className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
+            Sign up free
           </Link>
         </>
       }
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         {serverError && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+          <div className="rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
             {serverError}
-          </p>
+          </div>
         )}
         <Input
-          id="email" name="email" type="email" label="Email" autoComplete="email"
+          id="email" name="email" type="email" label="Email address"
+          placeholder="you@example.com"
+          autoComplete="email"
           value={form.email} onChange={onChange} error={errors.email}
         />
         <Input
-          id="password" name="password" type="password" label="Password" autoComplete="current-password"
+          id="password" name="password" type="password" label="Password"
+          placeholder="Your password"
+          autoComplete="current-password"
           value={form.password} onChange={onChange} error={errors.password}
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} className="w-full" size="lg">
           Log in
         </Button>
       </form>

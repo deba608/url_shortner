@@ -6,10 +6,8 @@ import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
-import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 
-export default function Register() {
-  useDocumentTitle("Create account");
+export default function Register({ onOpenAuth }) {
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -39,7 +37,7 @@ export default function Register() {
       await register({ email: form.email, password: form.password });
       navigate(ROUTES.DASHBOARD, { replace: true });
     } catch (err) {
-      setServerError(err.message || "Registration failed");
+      setServerError(err.message || "Registration failed. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -48,11 +46,11 @@ export default function Register() {
   return (
     <AuthCard
       title="Create your account"
-      subtitle="Start shortening in seconds"
+      subtitle="Start shortening URLs in seconds — it's free."
       footer={
         <>
           Already have an account?{" "}
-          <Link to={ROUTES.LOGIN} className="font-medium text-indigo-600 hover:underline dark:text-indigo-400">
+          <Link to={ROUTES.LOGIN} className="font-semibold text-indigo-600 dark:text-indigo-400 hover:underline">
             Log in
           </Link>
         </>
@@ -60,23 +58,29 @@ export default function Register() {
     >
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         {serverError && (
-          <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-950 dark:text-red-300">
+          <div className="rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 px-4 py-3 text-sm text-red-700 dark:text-red-400">
             {serverError}
-          </p>
+          </div>
         )}
         <Input
-          id="email" name="email" type="email" label="Email" autoComplete="email"
+          id="email" name="email" type="email" label="Email address"
+          placeholder="you@example.com"
+          autoComplete="email"
           value={form.email} onChange={onChange} error={errors.email}
         />
         <Input
-          id="password" name="password" type="password" label="Password" autoComplete="new-password"
+          id="password" name="password" type="password" label="Password"
+          placeholder="At least 8 characters"
+          autoComplete="new-password"
           value={form.password} onChange={onChange} error={errors.password}
         />
         <Input
-          id="confirm" name="confirm" type="password" label="Confirm password" autoComplete="new-password"
+          id="confirm" name="confirm" type="password" label="Confirm password"
+          placeholder="Repeat your password"
+          autoComplete="new-password"
           value={form.confirm} onChange={onChange} error={errors.confirm}
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} className="w-full" size="lg">
           Create account
         </Button>
       </form>
