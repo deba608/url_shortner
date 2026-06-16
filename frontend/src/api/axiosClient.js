@@ -1,11 +1,21 @@
 import axios from "axios";
 import { getToken, clearToken } from "@/utils/token";
 
+const resolveApiBaseUrl = () => {
+  const configured = import.meta.env.VITE_API_URL || "http://localhost:3000";
+  const trimmed = configured.replace(/\/+$/, "");
+
+  // This Express backend exposes routes at /auth, /user, /shorten, etc.
+  // A common Vercel mistake is setting VITE_API_URL to ".../api", which makes
+  // login call /api/auth/login and breaks immediately after deployment.
+  return trimmed.replace(/\/api$/, "");
+};
+
 // One configured Axios instance for the whole app. Every API module imports
 // THIS, never bare `axios`, so the base URL, auth header, and error handling
 // are applied uniformly.
 const axiosClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: resolveApiBaseUrl(),
   headers: { "Content-Type": "application/json" },
 });
 

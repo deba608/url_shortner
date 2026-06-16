@@ -13,3 +13,16 @@ export const validatePassword = (password) => {
   if (password.length < 6) return "Password must be at least 6 characters";
   return null;
 };
+
+export const validateUrl = (url) => {
+  if (!url) return "URL is required";
+  try {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return "URL must start with http:// or https://";
+    }
+    return null;
+  } catch {
+    return "Enter a valid URL";
+  }
+};

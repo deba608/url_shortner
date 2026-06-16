@@ -4,18 +4,22 @@ import { ToastProvider } from "@/context/ToastContext";
 import { AuthProvider } from "@/context/AuthContext";
 import AppRoutes from "@/routes/AppRoutes";
 
+import ErrorBoundary from "@/components/ErrorBoundary";
+
 // Provider order: Theme + Toast are app-wide and router-independent, so they wrap
 // the router. Auth lives inside BrowserRouter because it uses navigation.
 export default function App() {
   return (
-    <ThemeProvider>
-      <ToastProvider>
-        <BrowserRouter>
-          <AuthProvider>
-            <AppRoutes />
-          </AuthProvider>
-        </BrowserRouter>
-      </ToastProvider>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <ToastProvider>
+          <BrowserRouter>
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
+          </BrowserRouter>
+        </ToastProvider>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

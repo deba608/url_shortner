@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createShortUrl } from "@/api/urls";
 import { useToast } from "@/hooks/useToast";
+import { validateUrl } from "@/utils/validators";
 import Card from "@/components/ui/Card";
 import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
@@ -20,8 +21,9 @@ export default function CreateUrlForm({ onCreated }) {
     setError("");
     setResult(null);
 
-    if (!url.trim()) {
-      setError("Please enter a URL");
+    const urlError = validateUrl(url.trim());
+    if (urlError) {
+      setError(urlError);
       return;
     }
 
