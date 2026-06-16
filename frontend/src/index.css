@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Tailwind v4 is configured in CSS, not a JS config file.
+   Enable class-based dark mode (we toggle `.dark` on <html> in Phase 6). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  color-scheme: light dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  @apply bg-gray-50 text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100;
+}
