@@ -1,19 +1,23 @@
 import axiosClient from "@/api/axiosClient";
 
-// Trust the backend's shortUrl as-is — it's built from the API's own BASE_URL
-// env var, which is the correct domain for the link to redirect through.
-// (Previously this was rewritten to `${window.location.origin}/...`, which
-// silently replaced the real short link with the frontend's own domain —
-// breaking every generated link in production.)
+// Rewrite the backend's shortUrl to use the frontend's current domain (window.location.origin)
+// so that generated links are clean and branded to the Vercel deployment.
+// Redirection is then handled by the frontend Redirect route (/:shortCode).
 
 export const getUserUrls = async (config) => {
   const { data } = await axiosClient.get("/user", config);
-  return data.data;
+  return data.data.map((url) => ({
+    ...url,
+    shortUrl: `${window.location.origin}/${url.shortCode}`,
+  }));
 };
 
 export const createShortUrl = async (payload) => {
   const { data } = await axiosClient.post("/shorten", payload);
-  return data.data;
+  return {
+    ...data.data,
+    shortUrl: `${window.location.origin}/${data.data.shortCode}`,
+  };
 };
 
 export const getUrlAnalytics = async (id, config) => {
@@ -23,7 +27,10 @@ export const getUrlAnalytics = async (id, config) => {
 
 export const getUrlQrCode = async (id) => {
   const { data } = await axiosClient.get(`/urls/${id}/qrcode`);
-  return data.data;
+  return {
+    ...data.data,
+    shortUrl: `${window.location.origin}/${data.data.shortCode}`,
+  };
 };
 
 export const deleteUrl = async (id) => {
