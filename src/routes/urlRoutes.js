@@ -73,7 +73,39 @@ router.get("/user", authenticateToken, urlController.getUserUrls);
  *           type: integer
  *     responses:
  *       200:
- *         description: Detailed analytics data including click history
+ *         description: Detailed analytics data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     totalClicks:
+ *                       type: integer
+ *                     uniqueVisitors:
+ *                       type: integer
+ *                       description: Distinct IP addresses that have clicked the link.
+ *                     lastAccessed:
+ *                       type: string
+ *                       format: date-time
+ *                       nullable: true
+ *                     dailyClicks:
+ *                       type: integer
+ *                       description: Clicks in the last 24 hours.
+ *                     weeklyClicks:
+ *                       type: integer
+ *                       description: Clicks in the last 7 days.
+ *                     createdAt:
+ *                       type: string
+ *                       format: date-time
+ *                     clickHistory:
+ *                       type: array
+ *                       items:
+ *                         type: object
  *       401:
  *         description: Unauthorized
  *       404:

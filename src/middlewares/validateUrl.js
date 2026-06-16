@@ -11,7 +11,12 @@ const validateUrl = (req, res, next) => {
     });
   }
 
-  req.body.url = url.trim();
+  let normalizedUrl = url.trim();
+  if (!/^https?:\/\//i.test(normalizedUrl)) {
+    normalizedUrl = `http://${normalizedUrl}`;
+  }
+
+  req.body.url = normalizedUrl;
   validateUrlFormat(req.body.url);
 
   if (customAlias !== undefined) {

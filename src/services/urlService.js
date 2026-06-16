@@ -244,14 +244,37 @@ const getUrlAnalytics = async (urlId, userId) => {
     throw new ApiError(404, "URL not found or unauthorized");
   }
 
-  const lastClick = await prisma.click.findFirst({
-    where: { urlId: url.id },
-    orderBy: { clickedAt: 'desc' },
-  });
+  // Time windows for the daily / weekly rollups.
+  const now = Date.now();
+  const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
+
+  // Run the independent aggregations concurrently to keep latency low.
+  const [lastClick, uniqueGroups, dailyClicks, weeklyClicks] = await Promise.all([
+    prisma.click.findFirst({
+      where: { urlId: url.id },
+      orderBy: { clickedAt: "desc" },
+    }),
+    // Unique visitors approximated by distinct IP address. groupBy returns one
+    // row per distinct ipAddress; its length is the unique count.
+    prisma.click.groupBy({
+      by: ["ipAddress"],
+      where: { urlId: url.id },
+    }),
+    prisma.click.count({
+      where: { urlId: url.id, clickedAt: { gte: oneDayAgo } },
+    }),
+    prisma.click.count({
+      where: { urlId: url.id, clickedAt: { gte: sevenDaysAgo } },
+    }),
+  ]);
 
   return {
     totalClicks: url.clicks,
+    uniqueVisitors: uniqueGroups.length,
     lastAccessed: lastClick ? lastClick.clickedAt : null,
+    dailyClicks,
+    weeklyClicks,
     createdAt: url.createdAt,
     clickHistory: url.clickHistory,
   };
