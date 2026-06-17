@@ -79,6 +79,8 @@ export default function Register() {
         <Button type="submit" loading={loading} className="w-full">
           {loading ? "Creating account…" : "Create account"}
         </Button>
+        {/* Clerk bot-protection widget mounts here (invisible unless challenged). */}
+        <div id="clerk-captcha" />
       </form>
     </AuthCard>
   );

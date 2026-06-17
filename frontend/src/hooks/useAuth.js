@@ -5,7 +5,7 @@ import { useAuth as useClerkAuth, useUser, useClerk, useSignIn, useSignUp } from
 export function useAuth() {
   const { isSignedIn, isLoaded } = useClerkAuth();
   const { user } = useUser();
-  const { signOut } = useClerk();
+  const clerk = useClerk();
   const { signIn, setActive: setSignInActive } = useSignIn();
   const { signUp, setActive: setSignUpActive } = useSignUp();
 
@@ -19,17 +19,24 @@ export function useAuth() {
     }
   };
 
-  // Register: email + password → sends Clerk email verification code
-  // Returns { email } so callers can navigate to the verify screen.
+  // Register: email + password → sends Clerk email verification code.
+  // We chain off the resource returned by create() (not the closure's signUp,
+  // which is stale after the await) so prepareEmailAddressVerification reliably
+  // runs against the freshly-created sign-up. Returns { email } for the caller.
   const register = async ({ email, password }) => {
-    await signUp.create({ emailAddress: email, password });
-    await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    console.log("[AUTH] register: start", email);
+    const su = await signUp.create({ emailAddress: email, password });
+    console.log("[AUTH] register: create done", su?.status, "missing=", su?.missingFields);
+    await su.prepareEmailAddressVerification({ strategy: "email_code" });
+    console.log("[AUTH] register: prepare done", su?.verifications?.emailAddress?.status);
     return { email };
   };
 
-  // Verify OTP: Clerk email verification code
+  // Verify OTP: Clerk email verification code. Uses the live client sign-up
+  // resource, since this runs on a different page from register().
   const verifyOtp = async ({ code }) => {
-    const result = await signUp.attemptEmailAddressVerification({ code });
+    const su = clerk.client?.signUp ?? signUp;
+    const result = await su.attemptEmailAddressVerification({ code });
     if (result.status === "complete") {
       await setSignUpActive({ session: result.createdSessionId });
     } else {
@@ -37,9 +44,10 @@ export function useAuth() {
     }
   };
 
-  // Resend OTP: re-send Clerk verification email
+  // Resend OTP: re-send Clerk verification email against the live sign-up.
   const resendOtp = async () => {
-    await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+    const su = clerk.client?.signUp ?? signUp;
+    await su.prepareEmailAddressVerification({ strategy: "email_code" });
   };
 
   // Forgot password: sends Clerk reset code to email
@@ -48,9 +56,11 @@ export function useAuth() {
     return {};
   };
 
-  // Reset password: verify reset code + set new password
+  // Reset password: verify reset code + set new password. Uses the live client
+  // sign-in resource, since this runs on a different page from forgotPassword().
   const resetPassword = async ({ code, newPassword }) => {
-    const result = await signIn.attemptFirstFactor({
+    const si = clerk.client?.signIn ?? signIn;
+    const result = await si.attemptFirstFactor({
       strategy: "reset_password_email_code",
       code,
       password: newPassword,
@@ -62,7 +72,7 @@ export function useAuth() {
     }
   };
 
-  const logout = () => signOut();
+  const logout = () => clerk.signOut();
 
   return {
     isAuthenticated: !!isSignedIn,
