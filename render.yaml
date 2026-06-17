@@ -15,11 +15,8 @@ services:
     #   • Render caches node_modules between deploys when lock is unchanged
     buildCommand: npm ci && npx prisma generate
 
-    # `db push` syncs the DB to schema.prisma on every deploy. We use it instead
-    # of `migrate deploy` because the schema (Google-OAuth User model with
-    # googleId/name/avatar) was evolved via db push and isn't captured in the
-    # migrations/ history — so migrate deploy would leave prod missing columns.
-    startCommand: npx prisma db push --accept-data-loss && node server.js
+    # We use `migrate deploy` to apply versioned migrations to production.
+    startCommand: npx prisma migrate deploy && node server.js
 
     healthCheckPath: /health
 
