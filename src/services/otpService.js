@@ -47,10 +47,17 @@ async function issueOtp(email, type) {
     },
   });
 
-  await sendOtpEmail({ to: email, code, purpose: type });
+  const demo = config.demoMode || config.nodeEnv !== "production";
+  try {
+    await sendOtpEmail({ to: email, code, purpose: type });
+  } catch (err) {
+    // In demo mode we still complete the flow using devCode, so a failed send
+    // (e.g. no verified email domain) must not block registration/verification.
+    if (!demo) throw err;
+  }
 
-  // Surface the code in non-prod so the flow is demoable without real email.
-  return config.nodeEnv === "production" ? {} : { devCode: code };
+  // Surface the code when demoable so the flow works without real email.
+  return demo ? { devCode: code } : {};
 }
 
 /**

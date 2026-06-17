@@ -7,6 +7,10 @@ module.exports = {
   port: process.env.PORT || 3000,
   baseUrl: process.env.BASE_URL || `http://127.0.0.1:${process.env.PORT || 3000}`,
   nodeEnv: process.env.NODE_ENV || "development",
+  // Demo mode: surface OTP codes in API responses even in production, and treat
+  // email-send failures as non-fatal. Lets the signup/verify flow be demoed on a
+  // live deploy without a verified email domain. NOT secure for real users.
+  demoMode: process.env.DEMO_MODE === "true",
   jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
 
