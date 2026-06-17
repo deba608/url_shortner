@@ -115,7 +115,7 @@ export default function ForgotPassword() {
                     </svg>
                   </div>
                   <p className="text-sm text-gray-400">
-                    If an account exists with that email, you'll receive a reset link shortly.
+                    A reset link has been sent to <strong className="text-white">{email}</strong>. Please check your inbox (and spam folder).
                   </p>
                 </div>
               )}
