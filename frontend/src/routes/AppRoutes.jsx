@@ -17,10 +17,10 @@ const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 
 // Wraps a page with the public Navbar (Home, 404, legal pages).
-function WithNavbar({ children }) {
+function WithNavbar({ children, onOpenAuth }) {
   return (
     <>
-      <Navbar />
+      <Navbar onOpenAuth={onOpenAuth} />
       {children}
     </>
   );
@@ -41,12 +41,12 @@ const PageLoader = () => (
   </div>
 );
 
-export default function AppRoutes() {
+export default function AppRoutes({ onOpenAuth }) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
         {/* Public landing with Navbar */}
-        <Route path={ROUTES.HOME} element={<WithNavbar><Home /></WithNavbar>} />
+        <Route path={ROUTES.HOME} element={<WithNavbar onOpenAuth={onOpenAuth}><Home onOpenAuth={onOpenAuth} /></WithNavbar>} />
 
         {/* Authenticated app (Clerk-gated) */}
         <Route
@@ -64,10 +64,10 @@ export default function AppRoutes() {
         <Route path="/:shortCode" element={<Redirect />} />
 
         {/* Legal pages (public, share the Navbar shell) */}
-        <Route path={ROUTES.TERMS} element={<WithNavbar><Terms /></WithNavbar>} />
-        <Route path={ROUTES.PRIVACY} element={<WithNavbar><Privacy /></WithNavbar>} />
+        <Route path={ROUTES.TERMS} element={<WithNavbar onOpenAuth={onOpenAuth}><Terms /></WithNavbar>} />
+        <Route path={ROUTES.PRIVACY} element={<WithNavbar onOpenAuth={onOpenAuth}><Privacy /></WithNavbar>} />
 
-        <Route path="*" element={<WithNavbar><NotFound /></WithNavbar>} />
+        <Route path="*" element={<WithNavbar onOpenAuth={onOpenAuth}><NotFound /></WithNavbar>} />
       </Routes>
     </Suspense>
   );
