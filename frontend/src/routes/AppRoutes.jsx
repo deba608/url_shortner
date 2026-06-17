@@ -19,6 +19,8 @@ const MyUrls = lazy(() => import("@/pages/MyUrls"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const Redirect = lazy(() => import("@/pages/Redirect"));
+const Terms = lazy(() => import("@/pages/Terms"));
+const Privacy = lazy(() => import("@/pages/Privacy"));
 
 // Redirects authenticated users away from auth pages.
 function PublicOnly({ children }) {
@@ -102,6 +104,17 @@ export default function AppRoutes({ onOpenAuth }) {
         </Route>
 
         <Route path="/:shortCode" element={<Redirect />} />
+
+        {/* Legal pages (public, share the Navbar shell) */}
+        <Route
+          path={ROUTES.TERMS}
+          element={<WithNavbar onOpenAuth={onOpenAuth}><Terms /></WithNavbar>}
+        />
+        <Route
+          path={ROUTES.PRIVACY}
+          element={<WithNavbar onOpenAuth={onOpenAuth}><Privacy /></WithNavbar>}
+        />
+
         <Route path="*" element={<WithNavbar onOpenAuth={onOpenAuth}><NotFound /></WithNavbar>} />
       </Routes>
     </Suspense>

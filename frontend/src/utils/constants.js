@@ -12,6 +12,8 @@ export const ROUTES = {
   DASHBOARD: "/dashboard",
   URLS: "/urls",
   ANALYTICS: "/urls/:id/analytics",
+  TERMS: "/terms",
+  PRIVACY: "/privacy",
 };
 
 export const OTP_LENGTH = 6;
