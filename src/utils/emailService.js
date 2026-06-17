@@ -1,5 +1,4 @@
 const nodemailer = require("nodemailer");
-const logger = require("../config/logger");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -11,63 +10,87 @@ const transporter = nodemailer.createTransport({
 
 const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    logger.warn("EMAIL CREDENTIALS MISSING — password reset email not sent", {
-      toEmail,
-      resetUrl,
-    });
+    console.log("─── EMAIL CREDENTIALS MISSING ────────────────────────");
+    console.log(`  Would have sent reset link to: ${toEmail}`);
+    console.log(`  Link: ${resetUrl}`);
+    console.log("──────────────────────────────────────────────────────");
     return;
   }
 
+  const year = new Date().getFullYear();
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Reset your Shortly password</title></head>
+<body style="margin:0;padding:0;background-color:#f4f4f7;font-family:Arial,Helvetica,sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f4f7;padding:40px 0;">
+    <tr><td align="center">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
+        <tr>
+          <td align="center" style="padding:0 0 24px 0;">
+            <h1 style="margin:0;font-size:28px;font-weight:800;color:#4f46e5;">Shortly</h1>
+            <p style="margin:4px 0 0;font-size:13px;color:#888888;">URL Shortener</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="background-color:#ffffff;border-radius:12px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
+            <h2 style="margin:0 0 16px;font-size:22px;color:#1a1a2e;">Reset your password</h2>
+            <p style="margin:0 0 16px;font-size:15px;color:#555555;line-height:1.6;">
+              We received a request to reset the password for the Shortly account associated with <strong>${toEmail}</strong>.
+            </p>
+            <p style="margin:0 0 32px;font-size:15px;color:#555555;line-height:1.6;">
+              Click the button below to choose a new password. This link will expire in <strong>1 hour</strong>.
+            </p>
+            <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 auto;">
+              <tr>
+                <td style="background-color:#4f46e5;border-radius:8px;">
+                  <a href="${resetUrl}" target="_blank"
+                     style="display:inline-block;padding:14px 32px;font-size:15px;font-weight:700;color:#ffffff;text-decoration:none;border-radius:8px;">
+                    Reset Password
+                  </a>
+                </td>
+              </tr>
+            </table>
+            <p style="margin:28px 0 0;font-size:13px;color:#888888;line-height:1.6;text-align:center;">
+              If the button doesn't work, copy and paste this link:<br>
+              <a href="${resetUrl}" style="color:#4f46e5;word-break:break-all;">${resetUrl}</a>
+            </p>
+            <hr style="border:none;border-top:1px solid #f0f0f0;margin:32px 0;" />
+            <p style="margin:0;font-size:13px;color:#aaaaaa;line-height:1.5;">
+              If you didn't request a password reset, you can safely ignore this email.
+            </p>
+          </td>
+        </tr>
+        <tr>
+          <td align="center" style="padding:24px 0 0;">
+            <p style="margin:0;font-size:12px;color:#aaaaaa;">© ${year} Shortly. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+  const textContent = `Reset your Shortly password\n\nWe received a request to reset the password for your Shortly account (${toEmail}).\n\nClick the link below to reset your password (expires in 1 hour):\n${resetUrl}\n\nIf you didn't request this, you can safely ignore this email.\n\n© ${year} Shortly`;
+
   const mailOptions = {
-    from: `"Shortly Support" <${process.env.EMAIL_USER}>`,
+    from: {
+      name: "Shortly Support",
+      address: process.env.EMAIL_USER,
+    },
     to: toEmail,
     subject: "Reset your Shortly password",
-    html: buildResetEmailHtml(toEmail, resetUrl),
+    text: textContent,
+    html: htmlContent,
   };
 
   try {
-    const info = await transporter.sendMail(mailOptions);
-    logger.info(`Password reset email sent to ${toEmail}`, {
-      messageId: info.messageId,
-    });
+    await transporter.sendMail(mailOptions);
+    console.log(`Password reset email successfully sent to ${toEmail}`);
   } catch (error) {
-    logger.error("Failed to send password reset email", {
-      to: toEmail,
-      error: error.message,
-      stack: error.stack,
-    });
+    console.error("Error sending email via Nodemailer:", error.message);
   }
 };
 
-function buildResetEmailHtml(toEmail, resetUrl) {
-  const year = new Date().getFullYear();
-  return `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
-      <h2 style="color: #4f46e5; text-align: center;">Shortly</h2>
-      <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-        <h3 style="color: #333333; margin-top: 0;">Password Reset Request</h3>
-        <p style="color: #555555; line-height: 1.6;">
-          We received a request to reset the password for your Shortly account associated with <strong>${toEmail}</strong>.
-        </p>
-        <p style="color: #555555; line-height: 1.6;">
-          Click the button below to choose a new password. This link will expire in 1 hour.
-        </p>
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${resetUrl}" style="background-color: #4f46e5; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">
-            Reset Password
-          </a>
-        </div>
-        <p style="color: #777777; font-size: 13px; line-height: 1.5; margin-bottom: 0;">
-          If you did not request this, please ignore this email. Your password will remain unchanged.
-        </p>
-      </div>
-      <p style="text-align: center; color: #999999; font-size: 12px; margin-top: 20px;">
-        &copy; ${year} Shortly. All rights reserved.
-      </p>
-    </div>
-  `;
-}
-
-module.exports = {
-  sendPasswordResetEmail,
-};
+module.exports = { sendPasswordResetEmail };
