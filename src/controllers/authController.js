@@ -12,27 +12,22 @@ const googleLogin = async (req, res, next) => {
     let email, name, avatar, googleId;
 
     if (access_token) {
-      // Implicit flow: verify access_token via Google's userinfo endpoint using Node https
-      const userInfo = await new Promise((resolve, reject) => {
-        const https = require("https");
-        const options = {
-          hostname: "www.googleapis.com",
-          path: "/oauth2/v3/userinfo",
+      // Implicit flow: verify access_token via Google's userinfo endpoint
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
+      let userInfoRes;
+      try {
+        userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
           headers: { Authorization: `Bearer ${access_token}` },
-          family: 4,
-        };
-        https.get(options, (resp) => {
-          let data = "";
-          resp.on("data", (chunk) => { data += chunk; });
-          resp.on("end", () => {
-            if (resp.statusCode !== 200) {
-              reject(new Error("Invalid Google access token"));
-            } else {
-              resolve(JSON.parse(data));
-            }
-          });
-        }).on("error", reject);
-      });
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
+      if (!userInfoRes.ok) {
+        throw new Error("Invalid Google access token");
+      }
+      const userInfo = await userInfoRes.json();
       email = userInfo.email;
       name = userInfo.name;
       avatar = userInfo.picture;
@@ -77,6 +72,11 @@ const googleLogin = async (req, res, next) => {
 
     res.status(200).json({
       message: "Authentication successful",
+      // Token is also returned in the body (not just the cookie) so the SPA can
+      // send it as `Authorization: Bearer` — required because the frontend
+      // (Vercel) and API (Render) are different sites and browsers block the
+      // cross-site cookie by default.
+      token,
       user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
     });
   } catch (error) {

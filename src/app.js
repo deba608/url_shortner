@@ -19,7 +19,8 @@ const app = express();
 // CORS — must be registered before any other middleware so preflight OPTIONS
 // requests (sent by the browser for cross-origin POSTs) are answered immediately.
 const allowedOrigins = [
-  "http://localhost:5173", // Vite dev server
+  "http://localhost:5173", // Vite dev server (default)
+  "http://localhost:5174", // Vite dev server (fallback port)
   "http://localhost:3000", // direct access / Swagger UI
   process.env.FRONTEND_URL, // production frontend URL (set in prod .env)
 ].filter(Boolean);

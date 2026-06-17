@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
+import { wakeUpServer } from "@/api/ping";
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">

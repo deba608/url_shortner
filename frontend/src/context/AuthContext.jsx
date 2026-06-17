@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect, useCallback, useMemo } from "react";
-import axiosClient from "@/api/axiosClient";
+import axiosClient, { TOKEN_KEY } from "@/api/axiosClient";
 
 export const AuthContext = createContext(null);
 
@@ -27,6 +27,8 @@ export function AuthProvider({ children }) {
 
   const loginWithGoogle = useCallback(async (accessToken) => {
     const res = await axiosClient.post("/api/auth/google", { access_token: accessToken });
+    // Persist the JWT for the Bearer header (cross-site cookie can't be relied on).
+    if (res.data.token) localStorage.setItem(TOKEN_KEY, res.data.token);
     setUser(res.data.user);
     return res.data.user;
   }, []);
@@ -35,6 +37,7 @@ export function AuthProvider({ children }) {
     try {
       await axiosClient.post("/api/auth/logout");
     } finally {
+      localStorage.removeItem(TOKEN_KEY);
       setUser(null);
       window.location.assign("/login");
     }

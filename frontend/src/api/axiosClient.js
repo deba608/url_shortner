@@ -23,6 +23,17 @@ const axiosClient = axios.create({
   withCredentials: true,
 });
 
+// Storage key for the JWT. We send it as a Bearer token because the cookie is
+// third-party across Vercel↔Render and browsers block it by default.
+export const TOKEN_KEY = "shortly_token";
+
+// Attach the stored token to every request as Authorization: Bearer.
+axiosClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
 // Normalise errors and handle global auth failures.
 axiosClient.interceptors.response.use(
   (response) => response,
