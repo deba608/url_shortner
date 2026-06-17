@@ -108,10 +108,7 @@ export default function Login() {
 
           <div className="flex flex-col gap-10 mt-12 mb-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-400 mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                Free forever · No credit card required
-              </div>
+
               <h2 className="text-4xl xl:text-5xl font-black leading-[1.1] tracking-tight text-white">
                 The smarter way to<br />
                 <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
