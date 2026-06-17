@@ -1,5 +1,6 @@
 const config = require("../config");
 const logger = require("../config/logger");
+const ApiError = require("../utils/ApiError");
 
 // Lazily-created Resend client (only if configured + the package is installed).
 let resendClient = null;
@@ -27,8 +28,22 @@ async function sendEmail({ to, subject, text, html }) {
   const resend = getResend();
 
   if (resend) {
-    await resend.emails.send({ from: config.email.from, to, subject, text, html });
-    logger.info("Email sent", { to, subject });
+    // The Resend SDK does NOT throw on API errors — it resolves with { data, error }.
+    // We must inspect `error` ourselves, otherwise failed sends look successful.
+    const { data, error } = await resend.emails.send({
+      from: config.email.from,
+      to,
+      subject,
+      text,
+      html,
+    });
+
+    if (error) {
+      logger.error("Email send failed", { to, subject, error });
+      throw new ApiError(502, "Failed to send email. Please try again later.");
+    }
+
+    logger.info("Email sent", { to, subject, id: data?.id });
     return { delivered: true };
   }
 
