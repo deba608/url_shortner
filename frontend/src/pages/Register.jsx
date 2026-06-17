@@ -36,6 +36,12 @@ export default function Register() {
     setLoading(true);
     try {
       const res = await register({ email: form.email.trim(), password: form.password });
+      if (res.complete) {
+        // Email verification disabled in dashboard — already signed in.
+        toast("Account created — you're all set!", "success");
+        navigate(ROUTES.DASHBOARD, { replace: true });
+        return;
+      }
       toast("Verification code sent to your email", "success");
       navigate(ROUTES.VERIFY_OTP, { state: { email: res.email } });
     } catch (err) {

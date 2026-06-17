@@ -33,11 +33,17 @@ export function useAuth() {
     if (!signUpLoaded) throw new Error("Clerk is still loading. Please try again.");
     // create() returns the updated SignUp resource
     const su = await signUp.create({ emailAddress: email, password });
-    // Only call prepareEmailAddressVerification if not already prepared
-    if (su.status !== "complete" && su.verifications?.emailAddress?.status !== "unverified") {
+    // If the dashboard has email verification disabled, create() completes
+    // immediately with a session — activate it and skip the OTP screen.
+    if (su.status === "complete") {
+      await setSignUpActive({ session: su.createdSessionId });
+      return { email, complete: true };
+    }
+    // Otherwise prepare the email code (unless Clerk already did).
+    if (su.verifications?.emailAddress?.status !== "unverified") {
       await su.prepareEmailAddressVerification({ strategy: "email_code" });
     }
-    return { email };
+    return { email, complete: false };
   };
 
   // Verify OTP: Clerk email verification code.
