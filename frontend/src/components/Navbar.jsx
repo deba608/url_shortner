@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "@/hooks/useAuth";
+import { NavLink, useLocation } from "react-router-dom";
 import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
-import Button from "@/components/ui/Button";
 import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 const LinkIcon = () => (
@@ -28,11 +26,9 @@ const HomeIcon = () => (
 );
 
 export default function Navbar() {
-  const { user, logout, isAuthenticated } = useAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
@@ -69,16 +65,14 @@ export default function Navbar() {
 
             {/* Desktop nav links */}
             <div className="hidden md:flex items-center gap-6">
-              {isAuthenticated ? (
-                <>
-                  <NavLink to={ROUTES.DASHBOARD} className={navLinkClass} end>
-                    Dashboard
-                  </NavLink>
-                  <NavLink to={ROUTES.URLS} className={navLinkClass}>
-                    My URLs
-                  </NavLink>
-                </>
-              ) : null}
+              <Show when="signed-in">
+                <NavLink to={ROUTES.DASHBOARD} className={navLinkClass} end>
+                  Dashboard
+                </NavLink>
+                <NavLink to={ROUTES.URLS} className={navLinkClass}>
+                  My URLs
+                </NavLink>
+              </Show>
             </div>
 
             {/* Desktop right side */}

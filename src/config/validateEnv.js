@@ -8,7 +8,7 @@ const logger = require("./logger");
  * clear crash on launch). Production-only checks guard against shipping insecure
  * defaults (e.g. a weak JWT secret).
  */
-const REQUIRED = ["DATABASE_URL", "JWT_SECRET"];
+const REQUIRED = ["DATABASE_URL", "CLERK_SECRET_KEY"];
 
 const validateEnv = () => {
   const missing = REQUIRED.filter((key) => !process.env[key] || process.env[key].trim() === "");
@@ -23,10 +23,6 @@ const validateEnv = () => {
   if (isProduction) {
     if (!process.env.REDIS_URL) {
       logger.error("REDIS_URL is required in production");
-      process.exit(1);
-    }
-    if (process.env.JWT_SECRET.length < 32) {
-      logger.error("JWT_SECRET must be at least 32 characters in production");
       process.exit(1);
     }
     if (!process.env.BASE_URL) {

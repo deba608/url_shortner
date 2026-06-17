@@ -1,5 +1,4 @@
 import axios from "axios";
-import { ROUTES } from "@/utils/constants";
 
 const resolveApiBaseUrl = () => {
   // In development: Vite proxy forwards all API paths to localhost:3000.
@@ -50,10 +49,10 @@ axiosClient.interceptors.response.use(
       message = "Configuration Error: VITE_API_URL is missing. Please set it in your Vercel Environment Variables to point to your Render backend.";
     }
 
-    if (status === 401) {
-      if (window.location.pathname !== ROUTES.LOGIN) {
-        window.location.assign(ROUTES.LOGIN);
-      }
+    // A 401 on a protected request means the Clerk session is gone/expired.
+    // Send the user home, where the Navbar surfaces Clerk's sign-in.
+    if (status === 401 && window.location.pathname !== "/") {
+      window.location.assign("/");
     }
 
     return Promise.reject({ status, message, raw: error });
