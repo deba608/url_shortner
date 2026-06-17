@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const urlRoutes = require("./routes/urlRoutes");
+const authRoutes = require("./routes/authRoutes");
 const errorHandler = require("./middlewares/errorHandler");
 const notFound = require("./middlewares/notFound");
 const rateLimiter = require("./middlewares/rateLimiter");
@@ -87,12 +88,8 @@ app.get("/health", async (req, res) => {
   });
 });
 
-const { clerkMiddleware } = require("@clerk/express");
-
-// Apply Clerk middleware globally. This checks the request for a valid Clerk token
-// and populates req.auth if one is found. It does not block unauthenticated requests.
-app.use(clerkMiddleware());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use("/api/auth", authRoutes);
 app.use("/", urlRoutes);
 
 app.use(notFound);

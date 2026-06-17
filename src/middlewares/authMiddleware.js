@@ -1,10 +1,36 @@
-const { requireAuth } = require("@clerk/express");
+const jwt = require("jsonwebtoken");
+const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
 
-// For strictly protected routes, use Clerk's requireAuth()
-const authenticateToken = requireAuth();
+// For strictly protected routes
+const authenticateToken = (req, res, next) => {
+  const token = req.cookies?.token;
 
-// For routes where auth is optional, the clerkMiddleware() applied globally in app.js
-// already populates req.auth. We just pass the request through.
-const optionalAuthenticateToken = (req, res, next) => next();
+  if (!token) {
+    return res.status(401).json({ error: "Unauthorized: No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = decoded; // { id: "user-id", ... }
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
+  }
+};
+
+// For routes where auth is optional
+const optionalAuthenticateToken = (req, res, next) => {
+  const token = req.cookies?.token;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+    } catch (err) {
+      // Ignore invalid token for optional routes
+    }
+  }
+  next();
+};
 
 module.exports = { authenticateToken, optionalAuthenticateToken };

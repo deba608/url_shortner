@@ -9,10 +9,6 @@ import Spinner from "@/components/ui/Spinner";
 
 const Home = lazy(() => import("@/pages/Home"));
 const Login = lazy(() => import("@/pages/Login"));
-const Register = lazy(() => import("@/pages/Register"));
-const VerifyOtp = lazy(() => import("@/pages/VerifyOtp"));
-const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
-const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const MyUrls = lazy(() => import("@/pages/MyUrls"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
@@ -58,12 +54,8 @@ export default function AppRoutes() {
         {/* Public landing */}
         <Route path={ROUTES.HOME} element={<WithNavbar><Home /></WithNavbar>} />
 
-        {/* Auth pages — redirect signed-in users to dashboard */}
+        {/* Auth page — redirect signed-in users to dashboard */}
         <Route path={ROUTES.LOGIN} element={<PublicOnly><Login /></PublicOnly>} />
-        <Route path={ROUTES.REGISTER} element={<PublicOnly><Register /></PublicOnly>} />
-        <Route path={ROUTES.VERIFY_OTP} element={<PublicOnly><VerifyOtp /></PublicOnly>} />
-        <Route path={ROUTES.FORGOT_PASSWORD} element={<PublicOnly><ForgotPassword /></PublicOnly>} />
-        <Route path={ROUTES.RESET_PASSWORD} element={<PublicOnly><ResetPassword /></PublicOnly>} />
 
         {/* Authenticated app */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>

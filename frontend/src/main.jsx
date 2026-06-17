@@ -1,31 +1,19 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { ClerkProvider } from '@clerk/react'
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import './index.css'
 import App from './App.jsx'
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
 
-if (!PUBLISHABLE_KEY) {
-  throw new Error('Missing VITE_CLERK_PUBLISHABLE_KEY. Set it in frontend/.env.local (dev) and your Vercel env vars (prod).')
+if (!GOOGLE_CLIENT_ID) {
+  throw new Error('Missing VITE_GOOGLE_CLIENT_ID. Set it in frontend/.env.local (dev) and your Vercel env vars (prod).')
 }
 
-// Configure Clerk's bot-protection CAPTCHA widget to match our dark UI.
-// The "clerk-captcha" div id in Register.jsx acts as the mount point for the
-// Cloudflare Turnstile widget that Clerk renders during custom sign-up flows.
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ClerkProvider
-      publishableKey={PUBLISHABLE_KEY}
-      afterSignOutUrl="/"
-      appearance={{
-        captcha: {
-          theme: 'dark',
-          size: 'flexible',
-        },
-      }}
-    >
+    <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <App />
-    </ClerkProvider>
+    </GoogleOAuthProvider>
   </StrictMode>,
 )

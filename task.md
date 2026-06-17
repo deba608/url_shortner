@@ -1,0 +1,27 @@
+# Task List: Google OAuth Migration
+
+- `[x]` 1. Install dependencies
+  - `[x]` Backend: `google-auth-library`, `jsonwebtoken`
+  - `[x]` Backend: uninstall `@clerk/express`
+  - `[x]` Frontend: `@react-oauth/google`
+  - `[x]` Frontend: uninstall `@clerk/react`
+- `[x]` 2. Database Schema
+  - `[x]` Add `User` model to `schema.prisma`
+  - `[x]` Relate `Url` model to `User`
+  - `[x]` Run prisma migration / push
+- `[x]` 3. Backend Logic
+  - `[x]` Create `authController.js` (googleLogin, logout, me)
+  - `[x]` Create `authRoutes.js`
+  - `[x]` Update `authMiddleware.js` for JWTs
+  - `[x]` Update `app.js` to remove Clerk and add new routes
+  - `[x]` Update `urlController.js` to use `req.user.id` instead of `req.auth.userId`
+- `[x]` 4. Frontend Logic
+  - `[x]` Delete OTP and old Auth pages (`Register`, `VerifyOtp`, `ResetPassword`, `ForgotPassword`)
+  - `[x]` Update `Login.jsx` to single Google OAuth page
+  - `[x]` Update `main.jsx` with `<GoogleOAuthProvider>`
+  - `[x]` Update `useAuth.js` to manage session via `/api/auth/me`
+  - `[x]` Update `axiosClient.js` (remove Clerk, ensure credentials)
+  - `[x]` Update `AppRoutes.jsx` and `ProtectedRoute.jsx`
+- `[x]` 5. UI/UX Polishing
+  - `[x]` Ensure Dashboard uses new Google avatar
+  - `[x]` Ensure NavBar uses new Google avatar and logout method

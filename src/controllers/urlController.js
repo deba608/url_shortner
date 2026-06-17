@@ -7,7 +7,7 @@ const { resolveExpiration, isExpired } = require("../validators/expirationValida
 
 const createShortUrl = catchAsync(async (req, res) => {
   const { url, customAlias, expiresIn, expiresAt } = req.body;
-  const userId = req.auth ? req.auth.userId : null;
+  const userId = req.user ? req.user.id : null;
 
   // resolveExpiration returns: Date (set), null (clear), or undefined (not provided).
   const resolved = resolveExpiration({ expiresIn, expiresAt });
@@ -63,7 +63,7 @@ const getUrlStats = catchAsync(async (req, res) => {
 });
 
 const getUserUrls = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const urls = await urlService.getUserUrls(userId);
 
   res.json({
@@ -76,7 +76,7 @@ const getUserUrls = catchAsync(async (req, res) => {
 });
 
 const getUrlAnalytics = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const { id } = req.params;
 
   const analytics = await urlService.getUrlAnalytics(id, userId);
@@ -88,7 +88,7 @@ const getUrlAnalytics = catchAsync(async (req, res) => {
 });
 
 const getTopUrls = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const topUrls = await urlService.getTopUrls(userId);
 
   res.json({
@@ -98,7 +98,7 @@ const getTopUrls = catchAsync(async (req, res) => {
 });
 
 const getQrCode = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const { id } = req.params;
 
   const { dataUrl, shortUrl, shortCode } = await urlService.getQrCode(id, userId);
@@ -118,7 +118,7 @@ const getQrCode = catchAsync(async (req, res) => {
 });
 
 const updateExpiration = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const { id } = req.params;
   const { expiresIn, expiresAt } = req.body;
 
@@ -140,7 +140,7 @@ const updateExpiration = catchAsync(async (req, res) => {
 });
 
 const deleteUrl = catchAsync(async (req, res) => {
-  const userId = req.auth.userId;
+  const userId = req.user.id;
   const { id } = req.params;
 
   const deleted = await urlService.deleteUrl(id, userId);

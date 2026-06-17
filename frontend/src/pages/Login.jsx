@@ -1,90 +1,75 @@
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
-import { validateEmail } from "@/utils/validators";
 import { ROUTES } from "@/utils/constants";
 import AuthCard from "@/components/AuthCard";
-import Input from "@/components/ui/Input";
-import PasswordInput from "@/components/ui/PasswordInput";
-import Button from "@/components/ui/Button";
+import Spinner from "@/components/ui/Spinner";
 
 export default function Login() {
-  const { login, initializing } = useAuth();
+  const { loginWithGoogle, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
 
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
-  const onChange = (e) => setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
-
-  const validate = () => {
-    const next = {
-      email: validateEmail(form.email),
-      password: form.password ? null : "Password is required",
-    };
-    setErrors(next);
-    return !next.email && !next.password;
-  };
-
-  const onSubmit = async (e) => {
-    e.preventDefault();
-    if (!validate()) return;
+  const handleSuccess = async (credentialResponse) => {
     setLoading(true);
     try {
-      await login({ email: form.email.trim(), password: form.password });
-      toast("Welcome back!", "success");
+      await loginWithGoogle(credentialResponse.credential);
+      toast("Welcome!", "success");
       navigate(from, { replace: true });
     } catch (err) {
-      // Clerk returns structured errors — prefer longMessage for detail
-      const msg =
-        err?.errors?.[0]?.longMessage ||
-        err?.errors?.[0]?.message ||
-        err?.message ||
-        "Login failed";
-      toast(msg, "error");
+      toast("Authentication failed. Please try again.", "error");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleError = () => {
+    toast("Google authentication failed", "error");
+  };
+
   return (
     <AuthCard
-      title="Welcome back"
-      subtitle="Log in to manage your links"
+      title="Shorten. Track. Analyze."
+      subtitle="Create and manage links with real-time analytics."
       footer={
-        <>
-          Don&apos;t have an account?{" "}
-          <Link to={ROUTES.REGISTER} className="font-semibold text-indigo-400 hover:underline">
-            Sign up
+        <div className="text-center text-xs text-gray-400">
+          By continuing, you agree to our{" "}
+          <Link to={ROUTES.TERMS} className="text-indigo-400 hover:underline">
+            Terms
+          </Link>{" "}
+          &{" "}
+          <Link to={ROUTES.PRIVACY} className="text-indigo-400 hover:underline">
+            Privacy Policy
           </Link>
-        </>
+        </div>
       }
     >
-      <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
-        <Input
-          id="email" name="email" type="email" label="Email" autoComplete="email"
-          placeholder="you@example.com"
-          value={form.email} onChange={onChange} error={errors.email}
-        />
-        <PasswordInput
-          id="password" name="password" autoComplete="current-password"
-          placeholder="••••••••"
-          value={form.password} onChange={onChange} error={errors.password}
-          labelAction={
-            <Link to={ROUTES.FORGOT_PASSWORD} className="text-xs font-medium text-indigo-400 hover:underline">
-              Forgot password?
-            </Link>
-          }
-        />
-        <Button type="submit" loading={loading} disabled={initializing} className="w-full">
-          {loading ? "Signing in…" : "Sign in"}
-        </Button>
-      </form>
+      <div className="flex flex-col items-center justify-center gap-6 py-4">
+        {loading || initializing ? (
+          <div className="flex flex-col items-center gap-3">
+            <Spinner className="h-6 w-6 border-2 border-indigo-600 border-t-transparent" />
+            <p className="text-sm text-gray-400">Signing you in...</p>
+          </div>
+        ) : (
+          <div className="w-full flex justify-center">
+            <GoogleLogin
+              onSuccess={handleSuccess}
+              onError={handleError}
+              theme="filled_black"
+              shape="pill"
+              text="continue_with"
+              size="large"
+              width="100%"
+            />
+          </div>
+        )}
+      </div>
     </AuthCard>
   );
 }

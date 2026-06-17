@@ -19,18 +19,8 @@ const resolveApiBaseUrl = () => {
 const axiosClient = axios.create({
   baseURL: resolveApiBaseUrl(),
   headers: { "Content-Type": "application/json" },
-  // Send the HTTP-only auth cookie on cross-origin requests (works when the API
-  // is same-site or proxied; harmless otherwise since we also send a Bearer token).
+  // Send the HTTP-only auth cookie on cross-origin requests
   withCredentials: true,
-});
-
-// Attach the JWT as a Bearer token on every request (if present).
-axiosClient.interceptors.request.use(async (config) => {
-  if (window.Clerk && window.Clerk.session) {
-    const token = await window.Clerk.session.getToken();
-    if (token) config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
 });
 
 // Normalise errors and handle global auth failures.
@@ -49,10 +39,10 @@ axiosClient.interceptors.response.use(
       message = "Configuration Error: VITE_API_URL is missing. Please set it in your Vercel Environment Variables to point to your Render backend.";
     }
 
-    // A 401 on a protected request means the Clerk session is gone/expired.
-    // Send the user home, where the Navbar surfaces Clerk's sign-in.
-    if (status === 401 && window.location.pathname !== "/") {
-      window.location.assign("/");
+    // A 401 on a protected request means the session is gone/expired.
+    // Send the user to the login page.
+    if (status === 401 && window.location.pathname !== "/login") {
+      window.location.assign("/login");
     }
 
     return Promise.reject({ status, message, raw: error });
