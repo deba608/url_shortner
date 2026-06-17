@@ -91,147 +91,147 @@ export default function Login() {
         <div className="absolute -bottom-20 left-1/3 h-[300px] w-[300px] rounded-full bg-indigo-800/10 blur-[80px]" />
       </div>
 
-      {/* ── Left panel — feature showcase ────────────────────── */}
-      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between p-12 xl:p-16 relative">
-        {/* Subtle grid texture */}
-        <div
-          className="absolute inset-0 -z-10 opacity-[0.03]"
-          style={{
-            backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
-            backgroundSize: "40px 40px",
-          }}
-        />
+      {/* ── Main content wrapper to limit width and reduce empty space ── */}
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center">
+        {/* ── Left panel — feature showcase ────────────────────── */}
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 xl:p-16 relative">
+          {/* Subtle grid texture */}
+          <div
+            className="absolute inset-0 -z-10 opacity-[0.03]"
+            style={{
+              backgroundImage: "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+              backgroundSize: "40px 40px",
+            }}
+          />
 
-        <Logo size="lg" />
+          <Logo size="lg" />
 
-        <div className="flex flex-col gap-10">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-400 mb-6">
-              <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-              Free forever · No credit card required
-            </div>
-            <h2 className="text-4xl xl:text-5xl font-black leading-[1.1] tracking-tight text-white">
-              The smarter way to<br />
-              <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
-                share your links.
-              </span>
-            </h2>
-            <p className="mt-4 text-base text-gray-400 max-w-sm leading-relaxed">
-              Shorten, brand, and track every link — all from one powerful dashboard.
-            </p>
-          </div>
-
-          <ul className="grid grid-cols-1 gap-4">
-            {features.map(({ icon, title, desc }, i) => (
-              <li
-                key={title}
-                className="flex items-start gap-4 animate-slide-up"
-                style={{ animationDelay: `${i * 80}ms` }}
-              >
-                <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
-                  {icon}
-                </div>
-                <div>
-                  <p className="text-sm font-semibold text-white">{title}</p>
-                  <p className="text-sm text-gray-400 mt-0.5">{desc}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <p className="text-xs text-gray-600">© 2026 Shortly. All rights reserved.</p>
-      </div>
-
-      {/* ── Right panel — auth ───────────────────────────────── */}
-      <div className="flex flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12">
-        {/* Mobile logo */}
-        <div className="mb-10 lg:hidden">
-          <Logo size="md" />
-        </div>
-
-        <div
-          className="w-full max-w-sm animate-slide-up"
-          style={{ animationDelay: "100ms" }}
-        >
-          {/* Card */}
-          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl shadow-black/40">
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl font-black text-white tracking-tight">
-                Welcome back
-              </h1>
-              <p className="mt-1.5 text-sm text-gray-400">
-                Sign in to manage your short links.
+          <div className="flex flex-col gap-10 mt-12 mb-12">
+            <div>
+              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-400 mb-6">
+                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+                Free forever · No credit card required
+              </div>
+              <h2 className="text-4xl xl:text-5xl font-black leading-[1.1] tracking-tight text-white">
+                The smarter way to<br />
+                <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
+                  share your links.
+                </span>
+              </h2>
+              <p className="mt-4 text-base text-gray-400 max-w-sm leading-relaxed">
+                Shorten, brand, and track every link — all from one powerful dashboard.
               </p>
             </div>
 
-            {/* Divider with OR */}
-            <div className="relative mb-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-white/10" />
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-transparent px-3 text-xs text-gray-500 uppercase tracking-widest">
-                  Continue with
-                </span>
-              </div>
-            </div>
-
-            {/* Google Sign-in button */}
-            <button
-              id="google-signin-btn"
-              onClick={() => {
-                if (!loading) {
-                  setLoading(true);
-                  googleLogin();
-                }
-              }}
-              disabled={loading}
-              className="group relative w-full flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/8 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/15 hover:border-white/25 hover:shadow-lg hover:shadow-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {loading ? (
-                <>
-                  <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                  <span>Signing you in…</span>
-                </>
-              ) : (
-                <>
-                  <GoogleIcon />
-                  <span>Continue with Google</span>
-                  <svg
-                    className="ml-auto h-4 w-4 text-gray-500 transition-transform group-hover:translate-x-0.5"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </>
-              )}
-            </button>
-
-            {/* Security note */}
-            <div className="mt-5 flex items-center gap-2 text-xs text-gray-500">
-              <svg className="h-3.5 w-3.5 flex-shrink-0 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <span>Your data is encrypted and never shared.</span>
-            </div>
+            <ul className="grid grid-cols-1 gap-4">
+              {features.map(({ icon, title, desc }, i) => (
+                <li
+                  key={title}
+                  className="flex items-start gap-4 animate-slide-up"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <div className="flex-shrink-0 h-10 w-10 rounded-xl bg-indigo-500/15 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                    {icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="text-sm text-gray-400 mt-0.5">{desc}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           </div>
 
-          {/* Footer links */}
-          <p className="mt-6 text-center text-xs text-gray-500">
-            By continuing, you agree to our{" "}
-            <Link to={ROUTES.TERMS} className="text-indigo-400 hover:underline hover:text-indigo-300 transition-colors">
-              Terms
-            </Link>{" "}
-            &{" "}
-            <Link to={ROUTES.PRIVACY} className="text-indigo-400 hover:underline hover:text-indigo-300 transition-colors">
-              Privacy Policy
-            </Link>
-          </p>
+          <p className="text-xs text-gray-600">© 2026 Shortly. All rights reserved.</p>
+        </div>
+
+        {/* ── Right panel — auth ───────────────────────────────── */}
+        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto">
+          {/* Mobile logo */}
+          <div className="mb-10 lg:hidden">
+            <Logo size="md" />
+          </div>
+
+          <div
+            className="w-full animate-slide-up"
+            style={{ animationDelay: "100ms" }}
+          >
+            {/* Card */}
+            <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 shadow-2xl shadow-black/40">
+              {/* Header */}
+              <div className="mb-8">
+                <h1 className="text-2xl font-black text-white tracking-tight">
+                  Welcome back
+                </h1>
+                <p className="mt-1.5 text-sm text-gray-400">
+                  Sign in to manage your short links.
+                </p>
+              </div>
+
+              {/* Divider with OR */}
+              <div className="flex items-center mb-6">
+                <div className="flex-grow border-t border-white/10"></div>
+                <span className="px-3 text-xs text-gray-500 uppercase tracking-widest">
+                  Continue with
+                </span>
+                <div className="flex-grow border-t border-white/10"></div>
+              </div>
+
+              {/* Google Sign-in button */}
+              <button
+                id="google-signin-btn"
+                onClick={() => {
+                  if (!loading) {
+                    setLoading(true);
+                    googleLogin();
+                  }
+                }}
+                disabled={loading}
+                className="group relative w-full flex items-center justify-center gap-3 rounded-xl border border-white/15 bg-white/8 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:bg-white/15 hover:border-white/25 hover:shadow-lg hover:shadow-indigo-500/10 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {loading ? (
+                  <>
+                    <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                    <span>Signing you in…</span>
+                  </>
+                ) : (
+                  <>
+                    <GoogleIcon />
+                    <span>Continue with Google</span>
+                    <svg
+                      className="ml-auto h-4 w-4 text-gray-500 transition-transform group-hover:translate-x-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                    </svg>
+                  </>
+                )}
+              </button>
+
+              {/* Security note */}
+              <div className="mt-5 flex items-center gap-2 text-xs text-gray-500">
+                <svg className="h-3.5 w-3.5 flex-shrink-0 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Your data is encrypted and never shared.</span>
+              </div>
+            </div>
+
+            {/* Footer links */}
+            <p className="mt-6 text-center text-xs text-gray-500">
+              By continuing, you agree to our{" "}
+              <Link to={ROUTES.TERMS} className="text-indigo-400 hover:underline hover:text-indigo-300 transition-colors">
+                Terms
+              </Link>{" "}
+              &{" "}
+              <Link to={ROUTES.PRIVACY} className="text-indigo-400 hover:underline hover:text-indigo-300 transition-colors">
+                Privacy Policy
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>
