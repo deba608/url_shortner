@@ -8,7 +8,7 @@ const logger = require("./logger");
  * clear crash on launch). Production-only checks guard against shipping insecure
  * defaults (e.g. a weak JWT secret).
  */
-const REQUIRED = ["DATABASE_URL", "GOOGLE_CLIENT_ID"];
+const REQUIRED = ["DATABASE_URL"];
 
 const validateEnv = () => {
   const missing = REQUIRED.filter((key) => !process.env[key] || process.env[key].trim() === "");

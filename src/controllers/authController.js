@@ -1,62 +1,83 @@
-const { OAuth2Client } = require("google-auth-library");
+const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/database");
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID?.trim());
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
 
-const googleLogin = async (req, res, next) => {
+const register = async (req, res, next) => {
   try {
-    const { credential, access_token } = req.body;
+    const { email, password, name } = req.body;
 
-    let email, name, avatar, googleId;
-
-    if (access_token) {
-      // Implicit flow: verify access_token via Google's userinfo endpoint
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
-      let userInfoRes;
-      try {
-        userInfoRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
-          headers: { Authorization: `Bearer ${access_token}` },
-          signal: controller.signal,
-        });
-      } finally {
-        clearTimeout(timeout);
-      }
-      if (!userInfoRes.ok) {
-        throw new Error("Invalid Google access token");
-      }
-      const userInfo = await userInfoRes.json();
-      email = userInfo.email;
-      name = userInfo.name;
-      avatar = userInfo.picture;
-      googleId = userInfo.sub;
-    } else if (credential) {
-      // ID token flow: verify via google-auth-library
-      const ticket = await client.verifyIdToken({
-        idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID?.trim(),
-      });
-      const payload = ticket.getPayload();
-      email = payload.email;
-      name = payload.name;
-      avatar = payload.picture;
-      googleId = payload.sub;
-    } else {
-      return res.status(400).json({ error: "Missing credential or access_token" });
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
     }
 
-    // Find or create user
-    let user = await prisma.user.findUnique({ where: { googleId } });
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: "Invalid email format" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
+    // Check if user already exists
+    const existingUser = await prisma.user.findUnique({ where: { email } });
+    if (existingUser) {
+      return res.status(400).json({ error: "An account with this email already exists" });
+    }
+
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create user
+    const user = await prisma.user.create({
+      data: {
+        email: email.toLowerCase().trim(),
+        password: hashedPassword,
+        name: name ? name.trim() : null,
+      },
+    });
+
+    // Create JWT
+    const token = jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: "7d" });
+
+    // Set HttpOnly cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    res.status(201).json({
+      message: "Registration successful",
+      token,
+      user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
     if (!user) {
-      user = await prisma.user.create({ data: { googleId, email, name, avatar } });
-    } else {
-      // Update avatar/name in case they changed on Google
-      user = await prisma.user.update({
-        where: { googleId },
-        data: { avatar, name },
-      });
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: "Invalid email or password" });
     }
 
     // Create JWT
@@ -72,10 +93,6 @@ const googleLogin = async (req, res, next) => {
 
     res.status(200).json({
       message: "Authentication successful",
-      // Token is also returned in the body (not just the cookie) so the SPA can
-      // send it as `Authorization: Bearer` — required because the frontend
-      // (Vercel) and API (Render) are different sites and browsers block the
-      // cross-site cookie by default.
       token,
       user: { id: user.id, email: user.email, name: user.name, avatar: user.avatar },
     });
@@ -111,7 +128,8 @@ const me = async (req, res, next) => {
 };
 
 module.exports = {
-  googleLogin,
+  register,
+  login,
   logout,
   me,
 };

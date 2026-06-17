@@ -74,8 +74,12 @@ export default function Navbar() {
               {isAuthenticated ? (
                 <>
                   <div className="flex items-center gap-2">
-                    {user?.avatar && (
+                    {user?.avatar ? (
                       <img src={user.avatar} alt="Avatar" className="h-6 w-6 rounded-full" />
+                    ) : (
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 flex items-center justify-center text-[10px] font-bold text-white uppercase select-none">
+                        {(user?.name || user?.email || "?")[0]}
+                      </div>
                     )}
                     <span className="text-xs text-gray-500">{user?.email}</span>
                   </div>
@@ -148,8 +152,12 @@ export default function Navbar() {
                 </NavLink>
                 <div className="mt-2 border-t border-white/10 pt-3 px-2">
                   <div className="flex items-center gap-2 mb-2 px-2">
-                    {user?.avatar && (
+                    {user?.avatar ? (
                       <img src={user.avatar} alt="Avatar" className="h-6 w-6 rounded-full" />
+                    ) : (
+                      <div className="h-6 w-6 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 flex items-center justify-center text-[10px] font-bold text-white uppercase select-none">
+                        {(user?.name || user?.email || "?")[0]}
+                      </div>
                     )}
                     <p className="text-xs text-gray-500">{user?.email}</p>
                   </div>

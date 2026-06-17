@@ -4,8 +4,7 @@ import axiosClient, { TOKEN_KEY } from "@/api/axiosClient";
 export const AuthContext = createContext(null);
 
 // Single source of truth for the signed-in user. Provided once at the app root
-// so every component (Navbar, ProtectedRoute, pages) shares the same state —
-// otherwise each useAuth() call would hold its own copy and they'd disagree.
+// so every component (Navbar, ProtectedRoute, pages) shares the same state.
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
@@ -25,9 +24,15 @@ export function AuthProvider({ children }) {
     fetchUser();
   }, [fetchUser]);
 
-  const loginWithGoogle = useCallback(async (accessToken) => {
-    const res = await axiosClient.post("/api/auth/google", { access_token: accessToken });
-    // Persist the JWT for the Bearer header (cross-site cookie can't be relied on).
+  const login = useCallback(async (email, password) => {
+    const res = await axiosClient.post("/api/auth/login", { email, password });
+    if (res.data.token) localStorage.setItem(TOKEN_KEY, res.data.token);
+    setUser(res.data.user);
+    return res.data.user;
+  }, []);
+
+  const register = useCallback(async (name, email, password) => {
+    const res = await axiosClient.post("/api/auth/register", { name, email, password });
     if (res.data.token) localStorage.setItem(TOKEN_KEY, res.data.token);
     setUser(res.data.user);
     return res.data.user;
@@ -48,11 +53,12 @@ export function AuthProvider({ children }) {
       isAuthenticated: !!user,
       initializing,
       user,
-      loginWithGoogle,
+      login,
+      register,
       logout,
       refreshUser: fetchUser,
     }),
-    [user, initializing, loginWithGoogle, logout, fetchUser]
+    [user, initializing, login, register, logout, fetchUser]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

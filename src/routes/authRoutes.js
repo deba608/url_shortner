@@ -4,7 +4,8 @@ const { authenticateToken } = require("../middlewares/authMiddleware");
 
 const router = Router();
 
-router.post("/google", authController.googleLogin);
+router.post("/register", authController.register);
+router.post("/login", authController.login);
 router.post("/logout", authController.logout);
 router.get("/me", authenticateToken, authController.me);
 
