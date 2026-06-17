@@ -1,10 +1,17 @@
 const nodemailer = require("nodemailer");
 
+// Use explicit SMTP settings instead of service shorthand
+// — required for reliable delivery from cloud hosts like Render
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true, // SSL
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false,
   },
 });
 
@@ -86,10 +93,11 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   };
 
   try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Password reset email successfully sent to ${toEmail}`);
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Password reset email successfully sent to ${toEmail} — MessageID: ${info.messageId}`);
   } catch (error) {
     console.error("Error sending email via Nodemailer:", error.message);
+    throw error; // re-throw so the controller can return a 500 if email fails
   }
 };
 
