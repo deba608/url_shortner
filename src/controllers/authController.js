@@ -137,9 +137,8 @@ const forgotPassword = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
 
-    // Always return success to prevent email enumeration
     if (!user) {
-      return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+      return res.status(404).json({ error: "No account found with that email address" });
     }
 
     // Generate a short-lived JWT (1 hour) for password reset
