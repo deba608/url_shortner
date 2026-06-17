@@ -257,7 +257,7 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white transition-all duration-200 hover:from-indigo-500 hover:to-violet-500 hover:shadow-lg hover:shadow-indigo-500/20 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
+                  className="w-full flex items-center justify-center gap-3 rounded-xl bg-indigo-500/30 backdrop-blur-md border border-indigo-400/30 px-5 py-3.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:bg-indigo-500/40 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer"
                 >
                   {loading ? (
                     <>
