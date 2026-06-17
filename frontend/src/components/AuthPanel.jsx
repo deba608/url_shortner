@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { validateEmail, validatePassword } from "@/utils/validators";
 import { ROUTES } from "@/utils/constants";
@@ -264,8 +264,8 @@ export default function AuthPanel({ open, onClose, defaultTab = "login", onAuthS
           <div className="px-6 py-4 border-t border-white/10 flex-shrink-0">
             <p className="text-center text-xs text-gray-500">
               By continuing you agree to our{" "}
-              <span className="text-indigo-400 hover:underline cursor-pointer">Terms</span> and{" "}
-              <span className="text-indigo-400 hover:underline cursor-pointer">Privacy Policy</span>
+              <Link to={ROUTES.TERMS} className="text-indigo-400 hover:underline cursor-pointer">Terms</Link> and{" "}
+              <Link to={ROUTES.PRIVACY} className="text-indigo-400 hover:underline cursor-pointer">Privacy Policy</Link>
             </p>
           </div>
         </div>

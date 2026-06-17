@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { createShortUrl } from "@/api/urls";
 import { validateUrl } from "@/utils/validators";
 import { useAuth } from "@/hooks/useAuth";
@@ -220,7 +220,8 @@ export default function Home() {
 
                 <p className="mt-3 px-1 text-xs text-gray-400">
                   By shortening, you agree to our{" "}
-                  <span className="text-indigo-500 cursor-pointer hover:underline">Terms of Service</span>.
+                  <Link to={ROUTES.TERMS} className="text-indigo-500 cursor-pointer hover:underline">Terms of Service</Link>
+                  .
                   {!isAuthenticated && (
                     <>{" "}
                       <button type="button" onClick={() => navigate(ROUTES.LOGIN)} className="text-indigo-500 hover:underline">
