@@ -16,6 +16,7 @@ const NotFound = lazy(() => import("@/pages/NotFound"));
 const Redirect = lazy(() => import("@/pages/Redirect"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
+const Register = lazy(() => import("@/pages/Register"));
 
 // Redirect signed-in users away from auth pages (login, register, etc.)
 function PublicOnly({ children }) {
@@ -56,6 +57,7 @@ export default function AppRoutes() {
 
         {/* Auth page — redirect signed-in users to dashboard */}
         <Route path={ROUTES.LOGIN} element={<PublicOnly><Login /></PublicOnly>} />
+        <Route path={ROUTES.REGISTER} element={<PublicOnly><Register /></PublicOnly>} />
 
         {/* Authenticated app */}
         <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
