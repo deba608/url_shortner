@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npx prisma db push --accept-data-loss && node server.js",
-    "start:prod": "npx prisma db push --accept-data-loss && node server.js",
+    "start": "node scripts/prestart.js && node server.js",
+    "start:prod": "node scripts/prestart.js && node server.js",
     "dev": "nodemon server.js",
     "migrate:deploy": "npx prisma migrate deploy",
     "test": "jest"
