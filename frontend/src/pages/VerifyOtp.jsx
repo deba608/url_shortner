@@ -17,6 +17,9 @@ export default function VerifyOtp() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [cooldown, setCooldown] = useState(OTP_RESEND_COOLDOWN_SEC);
+  // Demo mode surfaces the code from the API so the flow works without real
+  // email. Kept in state so a resend can refresh it.
+  const [devCode, setDevCode] = useState(location.state?.devCode || "");
   const submittedFor = useRef(""); // prevents double auto-submit of the same code
 
   // Resend cooldown countdown.
@@ -54,7 +57,7 @@ export default function VerifyOtp() {
     try {
       const res = await resendOtp(email);
       toast("A new code has been sent", "success");
-      if (res?.devCode) toast(`Dev code: ${res.devCode}`, "info", 8000);
+      if (res?.devCode) setDevCode(res.devCode);
       setCooldown(OTP_RESEND_COOLDOWN_SEC);
     } catch (err) {
       toast(err.message || "Could not resend code", "error");
@@ -79,6 +82,17 @@ export default function VerifyOtp() {
       }
     >
       <form onSubmit={(e) => { e.preventDefault(); if (code.length === OTP_LENGTH) submit(code); }} className="flex flex-col gap-5">
+        {devCode && (
+          <button
+            type="button"
+            onClick={() => setCode(devCode)}
+            className="rounded-lg border border-indigo-500/40 bg-indigo-500/10 px-4 py-3 text-center text-sm text-indigo-200 transition hover:bg-indigo-500/20"
+          >
+            Demo mode — your code is{" "}
+            <span className="font-mono text-lg font-bold tracking-widest text-white">{devCode}</span>
+            <span className="mt-1 block text-xs text-indigo-300/80">Tap to fill it in automatically</span>
+          </button>
+        )}
         <OtpInput value={code} onChange={setCode} disabled={loading} autoFocus />
         <Button type="submit" loading={loading} disabled={code.length !== OTP_LENGTH} className="w-full">
           {loading ? "Verifying…" : "Verify email"}
