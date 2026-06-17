@@ -149,12 +149,18 @@ const forgotPassword = async (req, res, next) => {
       { expiresIn: "1h" }
     );
 
-    const resetUrl = `${process.env.BASE_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
 
-    // In development, log the reset link to console
-    console.log("─── PASSWORD RESET LINK ──────────────────────────────");
-    console.log(`  ${resetUrl}`);
-    console.log("──────────────────────────────────────────────────────");
+    // In development (or if env vars are missing), log the reset link to console
+    if (process.env.NODE_ENV !== "production" && (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD)) {
+      console.log("─── PASSWORD RESET LINK ──────────────────────────────");
+      console.log(`  ${resetUrl}`);
+      console.log("──────────────────────────────────────────────────────");
+    } else {
+      // Send the actual email using Nodemailer
+      const { sendPasswordResetEmail } = require("../utils/emailService");
+      sendPasswordResetEmail(user.email, resetUrl);
+    }
 
     res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
   } catch (error) {
