@@ -8,9 +8,13 @@
  * a required request.
  */
 
+// Resolve the API base URL. Falls back to the known Render deployment URL
+// in case VITE_API_URL is not set in Vercel's environment variables.
+const RENDER_API_URL = "https://url-shortner-eceq.onrender.com";
+
 const API_BASE_URL = import.meta.env.VITE_API_URL
   ? import.meta.env.VITE_API_URL.replace(/\/+$/, "").replace(/\/api$/, "")
-  : "";
+  : RENDER_API_URL;
 
 export function wakeUpServer() {
   // Only ping in production (DEV uses a local server that never sleeps)
@@ -21,7 +25,6 @@ export function wakeUpServer() {
   fetch(healthUrl, {
     method: "GET",
     credentials: "include",
-    // Short timeout — we only want to wake it, not wait for it
     signal: AbortSignal.timeout?.(30_000),
   }).catch(() => {
     // Silently ignore — server may still be waking up; real requests will retry
