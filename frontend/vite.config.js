@@ -18,6 +18,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
+      '/api': 'http://localhost:3000',
       '/auth': 'http://localhost:3000',
       '/shorten': 'http://localhost:3000',
       '/user': 'http://localhost:3000',
@@ -37,6 +38,7 @@ export default defineConfig({
   },
   preview: {
     proxy: {
+      '/api': 'http://localhost:3000',
       '/auth': 'http://localhost:3000',
       '/shorten': 'http://localhost:3000',
       '/user': 'http://localhost:3000',

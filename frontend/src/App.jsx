@@ -1,6 +1,7 @@
 import { BrowserRouter } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { ToastProvider } from "@/context/ToastContext";
+import { AuthProvider } from "@/context/AuthContext";
 import AppRoutes from "@/routes/AppRoutes";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
@@ -10,7 +11,9 @@ export default function App() {
       <ThemeProvider>
         <ToastProvider>
           <BrowserRouter>
-            <AppRoutes />
+            <AuthProvider>
+              <AppRoutes />
+            </AuthProvider>
           </BrowserRouter>
         </ToastProvider>
       </ThemeProvider>

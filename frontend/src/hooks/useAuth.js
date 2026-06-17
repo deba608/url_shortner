@@ -1,44 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
-import axiosClient from "@/api/axiosClient";
+import { useContext } from "react";
+import { AuthContext } from "@/context/AuthContext";
 
+// Consume the shared auth context. Guards against use outside the provider.
 export function useAuth() {
-  const [user, setUser] = useState(null);
-  const [initializing, setInitializing] = useState(true);
-
-  const fetchUser = useCallback(async () => {
-    try {
-      const res = await axiosClient.get("/api/auth/me");
-      setUser(res.data.user);
-    } catch (error) {
-      setUser(null);
-    } finally {
-      setInitializing(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  const loginWithGoogle = async (accessToken) => {
-    const res = await axiosClient.post("/api/auth/google", { access_token: accessToken });
-    setUser(res.data.user);
-  };
-
-  const logout = async () => {
-    try {
-      await axiosClient.post("/api/auth/logout");
-    } finally {
-      setUser(null);
-      window.location.assign("/login");
-    }
-  };
-
-  return {
-    isAuthenticated: !!user,
-    initializing,
-    user,
-    loginWithGoogle,
-    logout,
-  };
+  const ctx = useContext(AuthContext);
+  if (ctx === null) {
+    throw new Error("useAuth must be used within an <AuthProvider>");
+  }
+  return ctx;
 }
