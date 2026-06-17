@@ -22,16 +22,18 @@ const allowedOrigins = [
   "http://localhost:5173", // Vite dev server (default)
   "http://localhost:5174", // Vite dev server (fallback port)
   "http://localhost:3000", // direct access / Swagger UI
-  process.env.FRONTEND_URL, // production frontend URL (set in prod .env)
+  "https://shortly-devv.vercel.app", // production frontend
+  process.env.FRONTEND_URL, // overrideable via env var
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: (origin, cb) => {
-      // Allow requests with no Origin header (curl, Postman, server-to-server)
-      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
-        return cb(null, true);
-      }
+      if (!origin) return cb(null, true); // curl, Postman, server-to-server
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      if (origin.startsWith("http://localhost:")) return cb(null, true);
+      // Allow all Vercel preview deployments (*.vercel.app)
+      if (origin.endsWith(".vercel.app")) return cb(null, true);
       cb(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,

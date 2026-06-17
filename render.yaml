@@ -49,7 +49,7 @@ services:
       # OPTIONAL: set to your Vercel frontend URL to allow cross-origin requests
       # e.g. https://shortly.vercel.app
       - key: FRONTEND_URL
-        sync: false
+        value: https://shortly-devv.vercel.app
 
   # ── Managed Redis ──────────────────────────────────────────────────
   - type: keyvalue
