@@ -94,18 +94,12 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-[#020617]">
-      {/* Background ambient glow orbs */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute top-1/2 -right-40 h-[400px] w-[400px] rounded-full bg-violet-600/15 blur-[100px]" />
-        <div className="absolute -bottom-20 left-1/3 h-[300px] w-[300px] rounded-full bg-indigo-800/10 blur-[80px]" />
-      </div>
+    <div className="flex flex-col h-[calc(100vh-76px)] md:h-[calc(100vh-84px)] overflow-hidden relative">
 
       {/* ── Main content wrapper to limit width and reduce empty space ── */}
-      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center">
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center h-full">
         {/* ── Left panel — feature showcase ────────────────────── */}
-        <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 xl:p-16 relative">
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-center p-12 xl:p-16 relative h-full">
           {/* Subtle grid texture */}
           <div
             className="absolute inset-0 -z-10 opacity-[0.03]"
@@ -119,10 +113,7 @@ export default function Register() {
 
           <div className="flex flex-col gap-10 mt-12 mb-12">
             <div>
-              <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5 text-xs font-semibold text-indigo-400 mb-6">
-                <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-                Free forever · No credit card required
-              </div>
+
               <h2 className="text-4xl xl:text-5xl font-black leading-[1.1] tracking-tight text-white">
                 The smarter way to<br />
                 <span className="bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent">
@@ -157,7 +148,7 @@ export default function Register() {
         </div>
 
         {/* ── Right panel — auth ───────────────────────────────── */}
-        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto">
+        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto h-full">
           {/* Mobile logo */}
           <div className="mb-10 lg:hidden">
             <Logo size="md" />

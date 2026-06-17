@@ -88,18 +88,12 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex relative overflow-hidden bg-[#020617]">
-      {/* Background ambient glow orbs */}
-      <div className="pointer-events-none fixed inset-0 overflow-hidden -z-10">
-        <div className="absolute -top-40 -left-40 h-[600px] w-[600px] rounded-full bg-indigo-600/20 blur-[120px]" />
-        <div className="absolute top-1/2 -right-40 h-[400px] w-[400px] rounded-full bg-violet-600/15 blur-[100px]" />
-        <div className="absolute -bottom-20 left-1/3 h-[300px] w-[300px] rounded-full bg-indigo-800/10 blur-[80px]" />
-      </div>
+    <div className="flex flex-col h-[calc(100vh-76px)] md:h-[calc(100vh-84px)] overflow-hidden relative">
 
       {/* ── Main content wrapper to limit width and reduce empty space ── */}
-      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center">
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center h-full">
         {/* ── Left panel — feature showcase ────────────────────── */}
-        <div className="hidden lg:flex lg:flex-1 flex-col justify-between p-12 xl:p-16 relative">
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-center p-12 xl:p-16 relative h-full">
           {/* Subtle grid texture */}
           <div
             className="absolute inset-0 -z-10 opacity-[0.03]"
@@ -147,7 +141,7 @@ export default function Login() {
         </div>
 
         {/* ── Right panel — auth ───────────────────────────────── */}
-        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto">
+        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto h-full">
           {/* Mobile logo */}
           <div className="mb-10 lg:hidden">
             <Logo size="md" />
