@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "@clerk/react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { createShortUrl } from "@/api/urls";
 import { validateUrl } from "@/utils/validators";
 import { ROUTES } from "@/utils/constants";
@@ -18,7 +18,8 @@ async function copyText(text) {
 
 // ── Main component ───────────────────────────────────────────
 export default function Home({ onOpenAuth }) {
-  const { isSignedIn } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const [url, setUrl] = useState("");
   const [customAlias, setCustomAlias] = useState("");
   const [showAlias, setShowAlias] = useState(false);
@@ -137,7 +138,7 @@ export default function Home({ onOpenAuth }) {
 
                 {/* CTA row */}
                 <div className="mt-4 flex flex-col sm:flex-row items-center gap-3">
-                  {!isSignedIn && (
+                  {!isAuthenticated && (
                     <button
                       onClick={() => onOpenAuth?.("register")}
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold bg-indigo-500/30 backdrop-blur-md border border-indigo-400/30 text-white hover:bg-indigo-500/40 shadow-sm transition-colors"
@@ -220,7 +221,7 @@ export default function Home({ onOpenAuth }) {
                   By shortening, you agree to our{" "}
                   <Link to={ROUTES.TERMS} className="text-indigo-500 cursor-pointer hover:underline">Terms of Service</Link>
                   .
-                  {!isSignedIn && (
+                  {!isAuthenticated && (
                     <>{" "}
                       <button type="button" onClick={() => onOpenAuth?.("login")} className="text-indigo-500 hover:underline">
                         Log in

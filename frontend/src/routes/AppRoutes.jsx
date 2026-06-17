@@ -1,13 +1,18 @@
 import { lazy, Suspense } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import ProtectedRoute from "@/routes/ProtectedRoute";
 import DashboardLayout from "@/layouts/DashboardLayout";
 import Navbar from "@/components/Navbar";
 import Spinner from "@/components/ui/Spinner";
 
-// Lazy loaded page components
 const Home = lazy(() => import("@/pages/Home"));
+const Login = lazy(() => import("@/pages/Login"));
+const Register = lazy(() => import("@/pages/Register"));
+const VerifyOtp = lazy(() => import("@/pages/VerifyOtp"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const MyUrls = lazy(() => import("@/pages/MyUrls"));
 const Analytics = lazy(() => import("@/pages/Analytics"));
@@ -16,17 +21,22 @@ const Redirect = lazy(() => import("@/pages/Redirect"));
 const Terms = lazy(() => import("@/pages/Terms"));
 const Privacy = lazy(() => import("@/pages/Privacy"));
 
-// Wraps a page with the public Navbar (Home, 404, legal pages).
-function WithNavbar({ children, onOpenAuth }) {
+// Redirect signed-in users away from auth pages (login, register, etc.)
+function PublicOnly({ children }) {
+  const { isAuthenticated, initializing } = useAuth();
+  if (initializing) return null;
+  return isAuthenticated ? <Navigate to={ROUTES.DASHBOARD} replace /> : children;
+}
+
+function WithNavbar({ children }) {
   return (
     <>
-      <Navbar onOpenAuth={onOpenAuth} />
+      <Navbar />
       {children}
     </>
   );
 }
 
-// Full-screen loading fallback
 const PageLoader = () => (
   <div className="flex min-h-screen items-center justify-center">
     <div className="flex flex-col items-center gap-3">
@@ -41,21 +51,22 @@ const PageLoader = () => (
   </div>
 );
 
-export default function AppRoutes({ onOpenAuth }) {
+export default function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* Public landing with Navbar */}
-        <Route path={ROUTES.HOME} element={<WithNavbar onOpenAuth={onOpenAuth}><Home onOpenAuth={onOpenAuth} /></WithNavbar>} />
+        {/* Public landing */}
+        <Route path={ROUTES.HOME} element={<WithNavbar><Home /></WithNavbar>} />
 
-        {/* Authenticated app (Clerk-gated) */}
-        <Route
-          element={
-            <ProtectedRoute>
-              <DashboardLayout />
-            </ProtectedRoute>
-          }
-        >
+        {/* Auth pages — redirect signed-in users to dashboard */}
+        <Route path={ROUTES.LOGIN} element={<PublicOnly><Login /></PublicOnly>} />
+        <Route path={ROUTES.REGISTER} element={<PublicOnly><Register /></PublicOnly>} />
+        <Route path={ROUTES.VERIFY_OTP} element={<PublicOnly><VerifyOtp /></PublicOnly>} />
+        <Route path={ROUTES.FORGOT_PASSWORD} element={<PublicOnly><ForgotPassword /></PublicOnly>} />
+        <Route path={ROUTES.RESET_PASSWORD} element={<PublicOnly><ResetPassword /></PublicOnly>} />
+
+        {/* Authenticated app */}
+        <Route element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
           <Route path={ROUTES.DASHBOARD} element={<Dashboard />} />
           <Route path={ROUTES.URLS} element={<MyUrls />} />
           <Route path={ROUTES.ANALYTICS} element={<Analytics />} />
@@ -63,11 +74,11 @@ export default function AppRoutes({ onOpenAuth }) {
 
         <Route path="/:shortCode" element={<Redirect />} />
 
-        {/* Legal pages (public, share the Navbar shell) */}
-        <Route path={ROUTES.TERMS} element={<WithNavbar onOpenAuth={onOpenAuth}><Terms /></WithNavbar>} />
-        <Route path={ROUTES.PRIVACY} element={<WithNavbar onOpenAuth={onOpenAuth}><Privacy /></WithNavbar>} />
+        {/* Legal pages */}
+        <Route path={ROUTES.TERMS} element={<WithNavbar><Terms /></WithNavbar>} />
+        <Route path={ROUTES.PRIVACY} element={<WithNavbar><Privacy /></WithNavbar>} />
 
-        <Route path="*" element={<WithNavbar onOpenAuth={onOpenAuth}><NotFound /></WithNavbar>} />
+        <Route path="*" element={<WithNavbar><NotFound /></WithNavbar>} />
       </Routes>
     </Suspense>
   );
