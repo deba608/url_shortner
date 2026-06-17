@@ -25,7 +25,11 @@ export default defineConfig({
       '/stats': 'http://localhost:3000',
       '/analytics': 'http://localhost:3000',
       '/health': 'http://localhost:3000',
-      '^/[A-Za-z0-9_-]{4,12}$': {
+      // Short-code redirect proxy: only forward paths that look like short codes
+      // and are NOT known frontend SPA routes. The negative lookahead prevents
+      // /login, /register, /dashboard, /terms etc. from being forwarded to the
+      // backend (which would 404 them instead of serving index.html).
+      '^/(?!login|register|verify-otp|forgot-password|reset-password|dashboard|urls|analytics|terms|privacy|not-found)[A-Za-z0-9_-]{4,12}$': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
@@ -40,7 +44,7 @@ export default defineConfig({
       '/stats': 'http://localhost:3000',
       '/analytics': 'http://localhost:3000',
       '/health': 'http://localhost:3000',
-      '^/[A-Za-z0-9_-]{4,12}$': {
+      '^/(?!login|register|verify-otp|forgot-password|reset-password|dashboard|urls|analytics|terms|privacy|not-found)[A-Za-z0-9_-]{4,12}$': {
         target: 'http://localhost:3000',
         changeOrigin: true,
       },
