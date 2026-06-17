@@ -2,7 +2,7 @@ const { OAuth2Client } = require("google-auth-library");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/database");
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID?.trim());
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
 
 const googleLogin = async (req, res, next) => {
@@ -36,7 +36,7 @@ const googleLogin = async (req, res, next) => {
       // ID token flow: verify via google-auth-library
       const ticket = await client.verifyIdToken({
         idToken: credential,
-        audience: process.env.GOOGLE_CLIENT_ID,
+        audience: process.env.GOOGLE_CLIENT_ID?.trim(),
       });
       const payload = ticket.getPayload();
       email = payload.email;

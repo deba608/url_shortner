@@ -15,8 +15,11 @@ services:
     #   • Render caches node_modules between deploys when lock is unchanged
     buildCommand: npm ci && npx prisma generate
 
-    # `migrate deploy` is a no-op when schema is already in sync → near-instant
-    startCommand: npx prisma migrate deploy && node server.js
+    # `db push` syncs the DB to schema.prisma on every deploy. We use it instead
+    # of `migrate deploy` because the schema (Google-OAuth User model with
+    # googleId/name/avatar) was evolved via db push and isn't captured in the
+    # migrations/ history — so migrate deploy would leave prod missing columns.
+    startCommand: npx prisma db push --accept-data-loss && node server.js
 
     healthCheckPath: /health
 
@@ -41,6 +44,10 @@ services:
           property: connectionString
       - key: JWT_SECRET
         generateValue: true
+      # REQUIRED: Google OAuth client ID — must match the frontend's
+      # VITE_GOOGLE_CLIENT_ID. Set the value in the Render dashboard.
+      - key: GOOGLE_CLIENT_ID
+        sync: false
       # REQUIRED: set this to the service's public URL after the first deploy
       # e.g. https://url-shortener-api.onrender.com
       # The BASE_URL is used to build shortUrl in API responses.

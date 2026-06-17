@@ -8,7 +8,7 @@ import App from './App.jsx'
 // Fire immediately — warms up the Render free-tier backend before login
 wakeUpServer()
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim()
 
 if (!GOOGLE_CLIENT_ID) {
   throw new Error('Missing VITE_GOOGLE_CLIENT_ID. Set it in frontend/.env.local (dev) and your Vercel env vars (prod).')
