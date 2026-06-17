@@ -46,7 +46,7 @@ export default function Redirect() {
   }, [shortCode]);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-slate-950 text-white px-4 relative overflow-hidden">
+    <div className="flex min-h-screen flex-col items-center justify-center text-white px-4 relative overflow-hidden bg-transparent">
       {/* Subtle grid texture */}
       <div
         className="absolute inset-0 -z-10 opacity-[0.03]"
@@ -56,39 +56,40 @@ export default function Redirect() {
         }}
       />
 
-      <div className="w-full max-w-md animate-slide-up">
-        <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-8 sm:p-10 shadow-2xl shadow-black/40 text-center">
-          {error ? (
-            <div>
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-red-500/10 mb-5 border border-red-500/20">
-                <svg className="h-7 w-7 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      <div className="w-full max-w-md animate-slide-up text-center">
+        {error ? (
+          <div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-red-500/10 mb-6 border border-red-500/20 shadow-[0_0_30px_rgba(239,68,68,0.2)] animate-float-medium">
+              <svg className="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <p className="text-2xl font-black text-white mb-2 tracking-tight">Redirection failed</p>
+            <p className="text-base text-gray-400">{error}</p>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-10">
+            <div className="relative flex items-center justify-center mt-4">
+              {/* Ripple 1 */}
+              <div className="absolute inset-0 rounded-full border-2 border-indigo-500/40 animate-ping" style={{ animationDuration: '3s' }}></div>
+              {/* Ripple 2 */}
+              <div className="absolute inset-0 rounded-full border-2 border-violet-500/20 animate-ping" style={{ animationDuration: '3s', animationDelay: '1s' }}></div>
+              
+              {/* Floating Glowing Orb */}
+              <div className="relative h-24 w-24 rounded-full bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-400/40 flex items-center justify-center shadow-[0_0_50px_rgba(99,102,241,0.5)] animate-float-slow backdrop-blur-sm">
+                <svg className="h-10 w-10 text-indigo-300 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path strokeLinecap="round" strokeLinejoin="round"
+                    d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                 </svg>
               </div>
-              <p className="text-xl font-bold text-white mb-2 tracking-tight">Redirection failed</p>
-              <p className="text-sm text-gray-400">{error}</p>
             </div>
-          ) : (
-            <div className="flex flex-col items-center gap-6">
-              <div className="relative flex items-center justify-center mt-2">
-                {/* Outer pulsing ring */}
-                <div className="absolute inset-0 rounded-full border-2 border-indigo-500/30 animate-ping" style={{ animationDuration: '2s' }}></div>
-                
-                {/* Inner glowing icon */}
-                <div className="relative h-16 w-16 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center shadow-[0_0_20px_rgba(99,102,241,0.2)]">
-                  <svg className="h-7 w-7 text-indigo-400 animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path strokeLinecap="round" strokeLinejoin="round"
-                      d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                  </svg>
-                </div>
-              </div>
-              <div>
-                <p className="text-lg font-bold text-white tracking-tight">Taking you there...</p>
-                <p className="mt-1.5 text-sm text-gray-400">Please wait while we redirect you to your destination.</p>
-              </div>
+            
+            <div className="animate-fade-in" style={{ animationDelay: '200ms' }}>
+              <p className="text-2xl font-black text-white tracking-tight">Taking you there...</p>
+              <p className="mt-2 text-base text-gray-400">Please wait while we redirect you to your destination.</p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </div>
   );
