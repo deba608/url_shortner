@@ -1,5 +1,9 @@
 import axios from "axios";
 
+// Fallback to the known Render backend URL so the app works even if
+// VITE_API_URL is not set in Vercel's environment variables.
+const RENDER_API_URL = "https://url-shortner-eceq.onrender.com";
+
 const resolveApiBaseUrl = () => {
   // In development: Vite proxy forwards all API paths to localhost:3000.
   // Return empty string → Axios uses same origin → proxy handles routing.
@@ -8,8 +12,8 @@ const resolveApiBaseUrl = () => {
   }
 
   // In production (Vercel): VITE_API_URL must point to the Render API.
-  // e.g. https://url-shortener-api.onrender.com
-  const configured = import.meta.env.VITE_API_URL || "";
+  // Falls back to the hardcoded Render URL if the env var is not set.
+  const configured = import.meta.env.VITE_API_URL || RENDER_API_URL;
   return configured.replace(/\/+$/, "").replace(/\/api$/, "");
 };
 
