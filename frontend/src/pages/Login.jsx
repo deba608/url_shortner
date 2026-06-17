@@ -204,7 +204,14 @@ export default function Login() {
                 {loading ? (
                   <>
                     <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    <span>Signing you in…</span>
+                    <span>
+                      {serverWaking ? "Starting up server…" : "Signing you in…"}
+                    </span>
+                    {serverWaking && (
+                      <span className="ml-auto text-xs text-gray-400 font-normal">
+                        This may take ~15s
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>

@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/useToast";
 import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
+import { wakeUpServer } from "@/api/ping";
 
 const GoogleIcon = () => (
   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
@@ -62,22 +63,34 @@ export default function Register() {
   const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
 
   const [loading, setLoading] = useState(false);
+  const [serverWaking, setServerWaking] = useState(false);
+
+  // Proactively wake up the Render backend as soon as the register page mounts.
+  useEffect(() => {
+    wakeUpServer();
+  }, []);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setLoading(true);
+      setServerWaking(true);
+      const wakingTimer = setTimeout(() => setServerWaking(false), 12_000);
       try {
         await loginWithGoogle(tokenResponse.access_token);
+        clearTimeout(wakingTimer);
         toast("Welcome to Shortly! 🎉", "success");
         navigate(from, { replace: true });
       } catch (err) {
+        clearTimeout(wakingTimer);
         toast(err?.message || "Authentication failed. Please try again.", "error");
         setLoading(false);
+        setServerWaking(false);
       }
     },
     onError: () => {
       toast("Google sign-in was cancelled or failed.", "error");
       setLoading(false);
+      setServerWaking(false);
     },
   });
 
@@ -191,7 +204,14 @@ export default function Register() {
                 {loading ? (
                   <>
                     <div className="h-5 w-5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
-                    <span>Signing you in…</span>
+                    <span>
+                      {serverWaking ? "Starting up server…" : "Signing you in…"}
+                    </span>
+                    {serverWaking && (
+                      <span className="ml-auto text-xs text-gray-400 font-normal">
+                        This may take ~15s
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
