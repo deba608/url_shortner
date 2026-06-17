@@ -1,7 +1,7 @@
 const jwt = require("jsonwebtoken");
 const config = require("../config");
 
-const SECRET = config.jwtSecret || "default_secret";
+const SECRET = config.jwtSecret; // required by validateEnv at boot — no fallback
 
 // Read the JWT from the HTTP-only cookie first, then fall back to the
 // Authorization: Bearer header. Supporting both lets cookie-based browser

@@ -3,29 +3,46 @@ import { useParams } from "react-router-dom";
 import axiosClient from "@/api/axiosClient";
 import Spinner from "@/components/ui/Spinner";
 
+// Preflight the short code before navigating away from the SPA. A blind
+// window.location.replace() can't observe a 404/410 — the browser would just
+// land on the backend's error response. By resolving first we can surface a
+// friendly message (not found / expired) and only navigate on success.
 export default function Redirect() {
   const { shortCode } = useParams();
-  const [error] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!shortCode) return;
 
-    // Resolve backend API URL
-    // In axiosClient.defaults.baseURL we have the absolute backend URL,
-    // e.g. https://url-shortener-api.onrender.com or empty string.
-    const apiBaseUrl = axiosClient.defaults.baseURL || "";
-    
-    // Construct target URL to backend's HTTP redirection endpoint.
-    // In dev mode (Vite proxy): apiBaseUrl is empty, so we redirect to "/shortCode",
-    // which triggers Vite dev server's proxy configuration.
-    // In production (Vercel): apiBaseUrl is the absolute Render API URL,
-    // so we redirect to "https://api.onrender.com/shortCode".
-    const targetUrl = apiBaseUrl
-      ? `${apiBaseUrl.replace(/\/+$/, "")}/${shortCode}`
-      : `/${shortCode}`;
+    let cancelled = false;
 
-    // Perform browser-level navigation to the backend redirect route
-    window.location.replace(targetUrl);
+    const resolve = async () => {
+      try {
+        await axiosClient.get(`/stats/${shortCode}`);
+        if (cancelled) return;
+
+        // Confirmed to exist → hand off to the backend's redirect route.
+        const apiBaseUrl = axiosClient.defaults.baseURL || "";
+        const targetUrl = apiBaseUrl
+          ? `${apiBaseUrl.replace(/\/+$/, "")}/${shortCode}`
+          : `/${shortCode}`;
+        window.location.replace(targetUrl);
+      } catch (err) {
+        if (cancelled) return;
+        if (err.status === 404) {
+          setError("This short URL doesn't exist or has been deleted.");
+        } else if (err.status === 410) {
+          setError("This short URL has expired.");
+        } else {
+          setError(err.message || "Redirection failed. Please try again.");
+        }
+      }
+    };
+
+    resolve();
+    return () => {
+      cancelled = true;
+    };
   }, [shortCode]);
 
   return (

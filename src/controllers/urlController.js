@@ -2,6 +2,7 @@ const urlService = require("../services/urlService");
 const catchAsync = require("../utils/catchAsync");
 const ApiError = require("../utils/ApiError");
 const config = require("../config");
+const logger = require("../config/logger");
 const { resolveExpiration, isExpired } = require("../validators/expirationValidator");
 
 const createShortUrl = catchAsync(async (req, res) => {
@@ -40,7 +41,7 @@ const redirectToUrl = catchAsync(async (req, res) => {
 
   // Asynchronously record the click without blocking the redirect response
   urlService.recordClick(shortCode, ipAddress, userAgent).catch(err => {
-    console.error("Failed to record click:", err);
+    logger.error("Failed to record click", { shortCode, error: err.message });
   });
 
   res.redirect(url.originalUrl);

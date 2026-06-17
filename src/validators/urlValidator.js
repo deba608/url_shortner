@@ -1,11 +1,17 @@
 const ApiError = require("../utils/ApiError");
 const { ALIAS_MIN_LENGTH, ALIAS_MAX_LENGTH, ALIAS_PATTERN } = require("../utils/constants");
 
+const ALLOWED_PROTOCOLS = ["http:", "https:"];
+
 const validateUrlFormat = (url) => {
   try {
-    new URL(url);
+    const parsed = new URL(url);
+    if (!ALLOWED_PROTOCOLS.includes(parsed.protocol)) {
+      throw new ApiError(400, "Only HTTP and HTTPS URLs are allowed");
+    }
     return true;
-  } catch {
+  } catch (err) {
+    if (err instanceof ApiError) throw err;
     throw new ApiError(400, "Invalid URL format");
   }
 };

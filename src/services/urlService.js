@@ -2,6 +2,7 @@ const { nanoid } = require("nanoid");
 const QRCode = require("qrcode");
 const prisma = require("../config/database");
 const redisClient = require("../config/redis");
+const logger = require("../config/logger");
 const config = require("../config");
 const ApiError = require("../utils/ApiError");
 const {
@@ -99,12 +100,12 @@ const getUrlByShortCode = async (shortCode) => {
 
   // 2. If Redis contains the URL
   if (cachedUrl) {
-    console.log("CACHE HIT");
+    logger.debug("Redirect cache hit", { shortCode });
     return JSON.parse(cachedUrl); // Return parsed JSON object immediately
   }
 
   // 3. If Redis does not contain the URL (CACHE MISS)
-  console.log("CACHE MISS");
+  logger.debug("Redirect cache miss", { shortCode });
   const url = await prisma.url.findUnique({
     where: { shortCode },
   });

@@ -6,7 +6,7 @@ const ApiError = require("../utils/ApiError");
 const { issueOtp, verifyOtp } = require("./otpService");
 
 const SALT_ROUNDS = 10;
-const JWT_SECRET = config.jwtSecret || "default_secret";
+const JWT_SECRET = config.jwtSecret; // required by validateEnv at boot — no fallback
 
 const normalizeEmail = (email) => String(email || "").trim().toLowerCase();
 

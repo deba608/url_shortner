@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const morgan = require("morgan");
 const urlRoutes = require("./routes/urlRoutes");
@@ -33,6 +34,11 @@ app.use(
     credentials: true,
   })
 );
+
+// Security headers (X-Content-Type-Options, X-Frame-Options, etc.).
+// Content-Security-Policy is intentionally omitted — the API serves JSON and
+// Swagger UI (which needs inline scripts). Configure CSP on the frontend instead.
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(express.json());
 app.use(cookieParser());
 

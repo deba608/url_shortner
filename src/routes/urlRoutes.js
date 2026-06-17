@@ -2,6 +2,7 @@ const { Router } = require("express");
 const urlController = require("../controllers/urlController");
 const validateUrl = require("../middlewares/validateUrl");
 const { authenticateToken, optionalAuthenticateToken } = require("../middlewares/authMiddleware");
+const { redirectRateLimiter } = require("../middlewares/rateLimiter");
 
 const router = Router();
 
@@ -265,6 +266,6 @@ router.get("/stats/:shortCode", urlController.getUrlStats);
  *       410:
  *         description: URL has expired
  */
-router.get("/:shortCode", urlController.redirectToUrl);
+router.get("/:shortCode", redirectRateLimiter, urlController.redirectToUrl);
 
 module.exports = router;
