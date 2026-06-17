@@ -40,8 +40,10 @@ axiosClient.interceptors.response.use(
     }
 
     // A 401 on a protected request means the session is gone/expired.
-    // Send the user to the login page.
-    if (status === 401 && window.location.pathname !== "/login") {
+    // Send the user to the login page, but ignore the initial /me check
+    // so we don't accidentally redirect public pages (like the homepage).
+    const isMeCheck = error.config?.url?.includes("/api/auth/me");
+    if (status === 401 && window.location.pathname !== "/login" && !isMeCheck) {
       window.location.assign("/login");
     }
 
