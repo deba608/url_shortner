@@ -20,8 +20,8 @@ export function useAuth() {
     fetchUser();
   }, [fetchUser]);
 
-  const loginWithGoogle = async (credential) => {
-    const res = await axiosClient.post("/api/auth/google", { credential });
+  const loginWithGoogle = async (accessToken) => {
+    const res = await axiosClient.post("/api/auth/google", { access_token: accessToken });
     setUser(res.data.user);
   };
 
