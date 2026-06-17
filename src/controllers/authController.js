@@ -152,16 +152,9 @@ const forgotPassword = async (req, res, next) => {
     const resetUrl = `${process.env.BASE_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
 
     // In development, log the reset link to console
-    // In production (or if env vars are set), send the email.
-    if (process.env.NODE_ENV !== "production" && (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD)) {
-      console.log("─── PASSWORD RESET LINK ──────────────────────────────");
-      console.log(`  ${resetUrl}`);
-      console.log("──────────────────────────────────────────────────────");
-    } else {
-      // Fire and forget the email sending (no need to await and block the response)
-      const { sendPasswordResetEmail } = require("../utils/emailService");
-      sendPasswordResetEmail(user.email, resetUrl);
-    }
+    console.log("─── PASSWORD RESET LINK ──────────────────────────────");
+    console.log(`  ${resetUrl}`);
+    console.log("──────────────────────────────────────────────────────");
 
     res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
   } catch (error) {
