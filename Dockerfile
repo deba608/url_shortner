@@ -33,5 +33,8 @@ COPY . .
 
 EXPOSE 3000
 
-# migrate deploy is fast (no-op if schema matches); then start server
-CMD ["sh", "-c", "npx prisma migrate deploy && node server.js"]
+# Sync the DB to schema.prisma on boot. We use `db push` (not `migrate deploy`)
+# because the Google-OAuth User model was evolved via db push, not migrations —
+# and `db push` ignores the _prisma_migrations table, so a previously failed
+# migration (P3009) can't block startup. Then start the server.
+CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
