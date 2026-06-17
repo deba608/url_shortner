@@ -127,9 +127,94 @@ const me = async (req, res, next) => {
   }
 };
 
+const forgotPassword = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+
+    // Always return success to prevent email enumeration
+    if (!user) {
+      return res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+    }
+
+    // Generate a short-lived JWT (1 hour) for password reset
+    const resetToken = jwt.sign(
+      { email: user.email, type: "password_reset" },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const resetUrl = `${process.env.BASE_URL || "http://localhost:3000"}/reset-password?token=${resetToken}`;
+
+    // In development, log the reset link to console
+    // In production (or if env vars are set), send the email.
+    if (process.env.NODE_ENV !== "production" && (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD)) {
+      console.log("─── PASSWORD RESET LINK ──────────────────────────────");
+      console.log(`  ${resetUrl}`);
+      console.log("──────────────────────────────────────────────────────");
+    } else {
+      // Fire and forget the email sending (no need to await and block the response)
+      const { sendPasswordResetEmail } = require("../utils/emailService");
+      sendPasswordResetEmail(user.email, resetUrl);
+    }
+
+    res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ error: "Token and new password are required" });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    if (decoded.type !== "password_reset" || !decoded.email) {
+      return res.status(400).json({ error: "Invalid reset token" });
+    }
+
+    const user = await prisma.user.findUnique({ where: { email: decoded.email } });
+    if (!user) {
+      return res.status(400).json({ error: "User not found" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: { email: decoded.email },
+      data: { password: hashedPassword },
+    });
+
+    res.status(200).json({ message: "Password has been reset successfully. You can now log in." });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   me,
+  forgotPassword,
+  resetPassword,
 };
