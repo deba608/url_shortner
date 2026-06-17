@@ -1,5 +1,4 @@
 import axios from "axios";
-import { getToken, clearToken } from "@/utils/token";
 import { ROUTES } from "@/utils/constants";
 
 const resolveApiBaseUrl = () => {
@@ -27,9 +26,11 @@ const axiosClient = axios.create({
 });
 
 // Attach the JWT as a Bearer token on every request (if present).
-axiosClient.interceptors.request.use((config) => {
-  const token = getToken();
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+axiosClient.interceptors.request.use(async (config) => {
+  if (window.Clerk && window.Clerk.session) {
+    const token = await window.Clerk.session.getToken();
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -49,15 +50,7 @@ axiosClient.interceptors.response.use(
       message = "Configuration Error: VITE_API_URL is missing. Please set it in your Vercel Environment Variables to point to your Render backend.";
     }
 
-    // Auth endpoints (login, verify, reset, /me) manage their own errors —
-    // e.g. login returns 403 for "verify your email", which must NOT trigger a
-    // global logout-and-redirect. Only force re-auth when a *protected* request
-    // is rejected with 401.
-    const url = error.config?.url || "";
-    const isAuthEndpoint = url.startsWith("/auth/");
-
-    if (status === 401 && !isAuthEndpoint) {
-      clearToken();
+    if (status === 401) {
       if (window.location.pathname !== ROUTES.LOGIN) {
         window.location.assign(ROUTES.LOGIN);
       }

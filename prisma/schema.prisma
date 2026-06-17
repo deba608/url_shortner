@@ -17,8 +17,7 @@ model Url {
   clicks       Int       @default(0)
   createdAt    DateTime  @default(now())
   expiresAt    DateTime?
-  userId       Int?
-  user         User?     @relation(fields: [userId], references: [id])
+  userId       String?
   clickHistory Click[]
 
   @@index([expiresAt])
@@ -34,34 +33,4 @@ model Click {
   userAgent String?
 
   @@index([urlId])
-}
-
-model User {
-  id            Int      @id @default(autoincrement())
-  email         String   @unique
-  password      String
-  emailVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  urls          Url[]
-}
-
-// One-time codes for email verification and password reset. The code itself is
-// stored HASHED (never plaintext) — it's a credential. Short-lived + attempt-
-// limited to resist brute force of the 6-digit space.
-model OtpToken {
-  id         Int      @id @default(autoincrement())
-  email      String
-  codeHash   String
-  type       OtpType
-  expiresAt  DateTime
-  consumedAt DateTime?
-  attempts   Int      @default(0)
-  createdAt  DateTime @default(now())
-
-  @@index([email, type])
-}
-
-enum OtpType {
-  EMAIL_VERIFICATION
-  PASSWORD_RESET
 }
