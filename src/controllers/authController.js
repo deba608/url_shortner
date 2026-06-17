@@ -19,6 +19,7 @@ const googleLogin = async (req, res, next) => {
           hostname: "www.googleapis.com",
           path: "/oauth2/v3/userinfo",
           headers: { Authorization: `Bearer ${access_token}` },
+          family: 4,
         };
         https.get(options, (resp) => {
           let data = "";
