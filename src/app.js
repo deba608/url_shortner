@@ -28,7 +28,9 @@ app.use(
   cors({
     origin: (origin, cb) => {
       // Allow requests with no Origin header (curl, Postman, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+      if (!origin || allowedOrigins.includes(origin) || origin.startsWith("http://localhost:")) {
+        return cb(null, true);
+      }
       cb(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,
