@@ -22,7 +22,7 @@ export default function ForgotPassword() {
     try {
       await axiosClient.post("/api/auth/forgot-password", { email });
       setSent(true);
-      toast("Reset link sent! Check your email (or console in dev).", "success");
+      toast("Reset link sent! Please check your email inbox.", "success");
     } catch (err) {
       toast(err?.message || "Something went wrong.", "error");
     } finally {
