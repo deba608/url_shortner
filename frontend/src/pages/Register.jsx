@@ -94,12 +94,12 @@ export default function Register() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-76px)] md:h-[calc(100vh-84px)] overflow-hidden relative">
+    <div className="flex flex-col min-h-[calc(100vh-76px)] md:min-h-[calc(100vh-84px)] relative justify-center py-12 md:py-0">
 
       {/* ── Main content wrapper to limit width and reduce empty space ── */}
-      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center h-full">
+      <div className="w-full max-w-6xl mx-auto flex flex-col lg:flex-row lg:items-center">
         {/* ── Left panel — feature showcase ────────────────────── */}
-        <div className="hidden lg:flex lg:flex-1 flex-col justify-center p-12 xl:p-16 relative h-full">
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-center p-12 xl:p-16 relative">
           {/* Subtle grid texture */}
           <div
             className="absolute inset-0 -z-10 opacity-[0.03]"
@@ -148,7 +148,7 @@ export default function Register() {
         </div>
 
         {/* ── Right panel — auth ───────────────────────────────── */}
-        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto h-full">
+        <div className="flex lg:flex-1 flex-col items-center justify-center p-6 sm:p-10 lg:p-12 w-full max-w-lg mx-auto">
           {/* Mobile logo */}
           <div className="mb-10 lg:hidden">
             <Logo size="md" />
