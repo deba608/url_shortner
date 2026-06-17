@@ -63,23 +63,37 @@ export default function Login() {
   const from = location.state?.from?.pathname || ROUTES.DASHBOARD;
 
   const [loading, setLoading] = useState(false);
+  const [serverWaking, setServerWaking] = useState(false);
+
+  // Proactively wake up the Render backend as soon as the login page mounts.
+  // This runs in parallel so the server gets extra warm-up time.
+  useEffect(() => {
+    wakeUpServer();
+  }, []);
 
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       setLoading(true);
+      setServerWaking(true);
+      // After 3s, if still loading, the server is probably waking — keep showing message
+      const wakingTimer = setTimeout(() => setServerWaking(false), 12_000);
       try {
         // Send access_token to backend to verify with Google's tokeninfo
         await loginWithGoogle(tokenResponse.access_token);
+        clearTimeout(wakingTimer);
         toast("Welcome to Shortly! 🎉", "success");
         navigate(from, { replace: true });
       } catch (err) {
+        clearTimeout(wakingTimer);
         toast(err?.message || "Authentication failed. Please try again.", "error");
         setLoading(false);
+        setServerWaking(false);
       }
     },
     onError: () => {
       toast("Google sign-in was cancelled or failed.", "error");
       setLoading(false);
+      setServerWaking(false);
     },
   });
 
