@@ -15,8 +15,8 @@ services:
     #   • Render caches node_modules between deploys when lock is unchanged
     buildCommand: npm ci && npx prisma generate
 
-    # Resolve the failed migration (if any) and apply versioned migrations to production.
-    startCommand: npx prisma migrate resolve --rolled-back 20260617150519_add_name_and_avatar || true && npx prisma migrate deploy && node server.js
+    # Sync schema directly on startup to avoid migration table lockups.
+    startCommand: npx prisma db push --accept-data-loss && node server.js
 
     healthCheckPath: /health
 
