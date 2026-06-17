@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ROUTES } from "@/utils/constants";
 import Logo from "@/components/Logo";
 import Button from "@/components/ui/Button";
+import { Show, SignInButton, SignUpButton, UserButton } from "@clerk/react";
 
 const LinkIcon = () => (
   <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -82,25 +83,13 @@ export default function Navbar() {
 
             {/* Desktop right side */}
             <div className="hidden md:flex items-center gap-3">
-              {isAuthenticated ? (
-                <>
-                  <span className="text-sm text-gray-400 truncate max-w-[180px]">
-                    {user?.email}
-                  </span>
-                  <Button variant="secondary" size="sm" onClick={logout}>
-                    Log out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.LOGIN)}>
-                    Log in
-                  </Button>
-                  <Button size="sm" onClick={() => navigate(ROUTES.REGISTER)}>
-                    Sign up free
-                  </Button>
-                </>
-              )}
+              <Show when="signed-out">
+                <SignInButton />
+                <SignUpButton />
+              </Show>
+              <Show when="signed-in">
+                <UserButton />
+              </Show>
             </div>
 
             {/* Mobile right side */}
