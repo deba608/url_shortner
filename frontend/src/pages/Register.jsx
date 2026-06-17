@@ -10,7 +10,7 @@ import PasswordInput from "@/components/ui/PasswordInput";
 import Button from "@/components/ui/Button";
 
 export default function Register() {
-  const { register } = useAuth();
+  const { register, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -39,7 +39,12 @@ export default function Register() {
       toast("Verification code sent to your email", "success");
       navigate(ROUTES.VERIFY_OTP, { state: { email: res.email } });
     } catch (err) {
-      const msg = err?.errors?.[0]?.longMessage || err?.errors?.[0]?.message || err?.message || "Registration failed";
+      // Clerk returns structured errors — prefer longMessage, then message
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Registration failed";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -76,10 +81,18 @@ export default function Register() {
           placeholder="Re-enter your password"
           value={form.confirm} onChange={onChange} error={errors.confirm}
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} disabled={initializing} className="w-full">
           {loading ? "Creating account…" : "Create account"}
         </Button>
-        {/* Clerk bot-protection widget mounts here (invisible unless challenged). */}
+
+        {/*
+          REQUIRED for Clerk custom flows with bot protection enabled.
+          Clerk mounts the Cloudflare Turnstile CAPTCHA widget here.
+          The div MUST exist in the DOM before signUp.create() is called.
+          In most cases the widget is invisible (smart mode); it only shows a
+          visible challenge if Clerk's bot protection triggers it.
+          See: https://clerk.com/docs/custom-flows/bot-sign-up-protection
+        */}
         <div id="clerk-captcha" />
       </form>
     </AuthCard>

@@ -10,7 +10,7 @@ import PasswordInput from "@/components/ui/PasswordInput";
 import Button from "@/components/ui/Button";
 
 export default function ResetPassword() {
-  const { resetPassword } = useAuth();
+  const { resetPassword, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -42,7 +42,11 @@ export default function ResetPassword() {
       toast("Password reset — you're signed in", "success");
       navigate(ROUTES.DASHBOARD, { replace: true });
     } catch (err) {
-      const msg = err?.errors?.[0]?.message || err?.message || "Reset failed";
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Reset failed";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -64,7 +68,7 @@ export default function ResetPassword() {
       <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
         <div className="flex flex-col gap-1.5">
           <span className="text-sm font-medium text-gray-300">Verification code</span>
-          <OtpInput value={code} onChange={setCode} disabled={loading} autoFocus />
+          <OtpInput value={code} onChange={setCode} disabled={loading || initializing} autoFocus />
           {errors.code && <p className="text-xs text-red-400">{errors.code}</p>}
         </div>
         <PasswordInput
@@ -77,7 +81,7 @@ export default function ResetPassword() {
           placeholder="Re-enter your password"
           value={form.confirm} onChange={onChange} error={errors.confirm}
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} disabled={initializing} className="w-full">
           {loading ? "Resetting…" : "Reset password"}
         </Button>
       </form>

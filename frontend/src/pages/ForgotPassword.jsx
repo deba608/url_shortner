@@ -9,7 +9,7 @@ import Input from "@/components/ui/Input";
 import Button from "@/components/ui/Button";
 
 export default function ForgotPassword() {
-  const { forgotPassword } = useAuth();
+  const { forgotPassword, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -29,7 +29,11 @@ export default function ForgotPassword() {
       toast("Reset code sent — check your email", "success");
       navigate(ROUTES.RESET_PASSWORD, { state: { email: email.trim() } });
     } catch (err2) {
-      const msg = err2?.errors?.[0]?.message || err2?.message || "Something went wrong";
+      const msg =
+        err2?.errors?.[0]?.longMessage ||
+        err2?.errors?.[0]?.message ||
+        err2?.message ||
+        "Something went wrong";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -52,7 +56,7 @@ export default function ForgotPassword() {
           placeholder="you@example.com"
           value={email} onChange={(e) => setEmail(e.target.value)} error={error}
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} disabled={initializing} className="w-full">
           {loading ? "Sending…" : "Send reset code"}
         </Button>
       </form>

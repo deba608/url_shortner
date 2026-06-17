@@ -8,7 +8,7 @@ import OtpInput from "@/components/ui/OtpInput";
 import Button from "@/components/ui/Button";
 
 export default function VerifyOtp() {
-  const { verifyOtp, resendOtp } = useAuth();
+  const { verifyOtp, resendOtp, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,7 +32,11 @@ export default function VerifyOtp() {
       toast("Email verified — you're all set!", "success");
       navigate(ROUTES.DASHBOARD, { replace: true });
     } catch (err) {
-      const msg = err?.errors?.[0]?.message || err?.message || "Verification failed";
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Verification failed";
       toast(msg, "error");
       setCode("");
       submittedFor.current = "";
@@ -56,7 +60,12 @@ export default function VerifyOtp() {
       toast("A new code has been sent", "success");
       setCooldown(OTP_RESEND_COOLDOWN_SEC);
     } catch (err) {
-      toast(err?.errors?.[0]?.message || err?.message || "Could not resend code", "error");
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Could not resend code";
+      toast(msg, "error");
     }
   };
 
@@ -76,8 +85,8 @@ export default function VerifyOtp() {
       }
     >
       <form onSubmit={(e) => { e.preventDefault(); if (code.length === OTP_LENGTH) submit(code); }} className="flex flex-col gap-5">
-        <OtpInput value={code} onChange={setCode} disabled={loading} autoFocus />
-        <Button type="submit" loading={loading} disabled={code.length !== OTP_LENGTH} className="w-full">
+        <OtpInput value={code} onChange={setCode} disabled={loading || initializing} autoFocus />
+        <Button type="submit" loading={loading} disabled={code.length !== OTP_LENGTH || initializing} className="w-full">
           {loading ? "Verifying…" : "Verify email"}
         </Button>
         <div className="text-center text-sm text-gray-400">

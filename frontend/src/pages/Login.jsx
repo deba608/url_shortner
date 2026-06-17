@@ -10,7 +10,7 @@ import PasswordInput from "@/components/ui/PasswordInput";
 import Button from "@/components/ui/Button";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, initializing } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -40,7 +40,12 @@ export default function Login() {
       toast("Welcome back!", "success");
       navigate(from, { replace: true });
     } catch (err) {
-      const msg = err?.errors?.[0]?.message || err?.message || "Login failed";
+      // Clerk returns structured errors — prefer longMessage for detail
+      const msg =
+        err?.errors?.[0]?.longMessage ||
+        err?.errors?.[0]?.message ||
+        err?.message ||
+        "Login failed";
       toast(msg, "error");
     } finally {
       setLoading(false);
@@ -76,7 +81,7 @@ export default function Login() {
             </Link>
           }
         />
-        <Button type="submit" loading={loading} className="w-full">
+        <Button type="submit" loading={loading} disabled={initializing} className="w-full">
           {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>

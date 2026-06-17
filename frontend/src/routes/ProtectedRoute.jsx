@@ -1,10 +1,14 @@
-import { useAuth, RedirectToSignIn } from "@clerk/react";
+import { useAuth as useClerkAuth } from "@clerk/react";
+import { Navigate, useLocation } from "react-router-dom";
 import Spinner from "@/components/ui/Spinner";
+import { ROUTES } from "@/utils/constants";
 
-// Gate for authenticated routes. Clerk's useAuth resolves the session; while it
-// loads we show a spinner, and unauthenticated users are sent to Clerk sign-in.
+// Gate for authenticated routes. Uses Clerk's useAuth directly for a fast
+// isLoaded check. Unauthenticated users are redirected to our custom /login
+// page (not Clerk's hosted UI) so the "from" location is preserved.
 export default function ProtectedRoute({ children }) {
-  const { isLoaded, isSignedIn } = useAuth();
+  const { isLoaded, isSignedIn } = useClerkAuth();
+  const location = useLocation();
 
   if (!isLoaded) {
     return (
@@ -15,7 +19,8 @@ export default function ProtectedRoute({ children }) {
   }
 
   if (!isSignedIn) {
-    return <RedirectToSignIn />;
+    // Preserve the attempted URL so Login can redirect back after auth
+    return <Navigate to={ROUTES.LOGIN} state={{ from: location }} replace />;
   }
 
   return children;
