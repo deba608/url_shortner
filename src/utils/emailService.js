@@ -1,29 +1,47 @@
 const nodemailer = require("nodemailer");
+const logger = require("../config/logger");
 
-// Create a reusable transporter using Gmail's SMTP settings.
-// This requires an "App Password", not your normal Gmail password.
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // e.g., noreply.dev.sh@gmail.com
-    pass: process.env.EMAIL_APP_PASSWORD, // 16-character app password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_APP_PASSWORD,
   },
 });
 
-/**
- * Send a beautifully formatted HTML password reset email.
- */
 const sendPasswordResetEmail = async (toEmail, resetUrl) => {
-  // If credentials aren't set, just log it (useful for local testing without .env)
   if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    console.log("─── EMAIL CREDENTIALS MISSING ────────────────────────");
-    console.log(`  Would have sent reset link to: ${toEmail}`);
-    console.log(`  Link: ${resetUrl}`);
-    console.log("──────────────────────────────────────────────────────");
+    logger.warn("EMAIL CREDENTIALS MISSING — password reset email not sent", {
+      toEmail,
+      resetUrl,
+    });
     return;
   }
 
-  const htmlContent = `
+  const mailOptions = {
+    from: `"Shortly Support" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: "Reset your Shortly password",
+    html: buildResetEmailHtml(toEmail, resetUrl),
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    logger.info(`Password reset email sent to ${toEmail}`, {
+      messageId: info.messageId,
+    });
+  } catch (error) {
+    logger.error("Failed to send password reset email", {
+      to: toEmail,
+      error: error.message,
+      stack: error.stack,
+    });
+  }
+};
+
+function buildResetEmailHtml(toEmail, resetUrl) {
+  const year = new Date().getFullYear();
+  return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; border-radius: 10px;">
       <h2 style="color: #4f46e5; text-align: center;">Shortly</h2>
       <div style="background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
@@ -44,27 +62,11 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
         </p>
       </div>
       <p style="text-align: center; color: #999999; font-size: 12px; margin-top: 20px;">
-        © ${new Date().getFullYear()} Shortly. All rights reserved.
+        &copy; ${year} Shortly. All rights reserved.
       </p>
     </div>
   `;
-
-  const mailOptions = {
-    from: `"Shortly Support" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: "Reset your Shortly password",
-    html: htmlContent,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    console.log(`Password reset email successfully sent to ${toEmail}`);
-  } catch (error) {
-    console.error("Error sending email via Nodemailer:", error);
-    // We throw the error so the controller can handle it (optional)
-    // but usually we don't want to break the flow for the user if email fails.
-  }
-};
+}
 
 module.exports = {
   sendPasswordResetEmail,
