@@ -1,7 +1,9 @@
 const mockSendMail = jest.fn();
+const mockVerify = jest.fn();
 jest.mock("nodemailer", () => ({
   createTransport: () => ({
     sendMail: (...a) => mockSendMail(...a),
+    verify: (...a) => mockVerify(...a),
   }),
 }));
 
@@ -21,7 +23,7 @@ jest.mock("../src/config/logger", () => ({
   error: (...a) => mockLoggerError(...a),
 }));
 
-const { sendPasswordResetEmail } = require("../src/utils/emailService");
+const { sendPasswordResetEmail, verifyEmailTransport } = require("../src/utils/emailService");
 const authController = require("../src/controllers/authController");
 
 describe("sendPasswordResetEmail", () => {
@@ -41,8 +43,9 @@ describe("sendPasswordResetEmail", () => {
   it("sends an email with correct options", async () => {
     mockSendMail.mockResolvedValue({ messageId: "test-msg-id" });
 
-    await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
+    const result = await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
 
+    expect(result).toEqual({ success: true, messageId: "test-msg-id" });
     expect(mockSendMail).toHaveBeenCalledWith({
       from: { name: "Shortly Support", address: "noreply@test.com" },
       to: "user@example.com",
@@ -60,8 +63,9 @@ describe("sendPasswordResetEmail", () => {
     delete process.env.EMAIL_USER;
     delete process.env.EMAIL_APP_PASSWORD;
 
-    await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
+    const result = await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
 
+    expect(result.success).toBe(false);
     expect(mockSendMail).not.toHaveBeenCalled();
     expect(mockLoggerWarn).toHaveBeenCalledWith(
       expect.stringContaining("CREDENTIALS MISSING"),
@@ -69,11 +73,13 @@ describe("sendPasswordResetEmail", () => {
     );
   });
 
-  it("logs an error when sendMail fails", async () => {
+  it("logs an error and returns failure when sendMail fails", async () => {
     mockSendMail.mockRejectedValue(new Error("SMTP connection refused"));
 
-    await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
+    const result = await sendPasswordResetEmail("user@example.com", "https://example.com/reset?token=abc");
 
+    expect(result.success).toBe(false);
+    expect(result.error).toBe("SMTP connection refused");
     expect(mockLoggerError).toHaveBeenCalledWith(
       expect.stringContaining("Failed to send"),
       expect.objectContaining({
@@ -81,6 +87,58 @@ describe("sendPasswordResetEmail", () => {
         error: "SMTP connection refused",
       })
     );
+  });
+});
+
+describe("verifyEmailTransport", () => {
+  const OLD_ENV = process.env;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    process.env = { ...OLD_ENV };
+    process.env.EMAIL_USER = "noreply@test.com";
+    process.env.EMAIL_APP_PASSWORD = "app-pass-123";
+  });
+
+  afterAll(() => {
+    process.env = OLD_ENV;
+  });
+
+  it("returns true when SMTP verification succeeds", async () => {
+    mockVerify.mockResolvedValue(true);
+
+    const result = await verifyEmailTransport();
+
+    expect(result).toBe(true);
+    expect(mockLoggerInfo).toHaveBeenCalledWith(
+      expect.stringContaining("verified successfully"),
+      expect.any(Object)
+    );
+  });
+
+  it("returns false and logs an error when SMTP verification fails", async () => {
+    const err = new Error("Invalid login");
+    err.code = "EAUTH";
+    mockVerify.mockRejectedValue(err);
+
+    const result = await verifyEmailTransport();
+
+    expect(result).toBe(false);
+    expect(mockLoggerError).toHaveBeenCalledWith(
+      expect.stringContaining("verification failed"),
+      expect.objectContaining({ error: "Invalid login", code: "EAUTH" })
+    );
+  });
+
+  it("returns false when credentials are missing", async () => {
+    delete process.env.EMAIL_USER;
+    delete process.env.EMAIL_APP_PASSWORD;
+
+    const result = await verifyEmailTransport();
+
+    expect(result).toBe(false);
+    expect(mockVerify).not.toHaveBeenCalled();
+    expect(mockLoggerWarn).toHaveBeenCalled();
   });
 });
 
@@ -131,6 +189,31 @@ describe("forgotPassword controller", () => {
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
       message: expect.stringContaining("reset link has been sent"),
+    });
+  });
+
+  it("returns 500 when email fails to send", async () => {
+    const prisma = require("../src/config/database");
+    prisma.user.findUnique.mockResolvedValue({
+      id: 1,
+      email: "user@example.com",
+      name: "Test User",
+    });
+
+    mockSendMail.mockRejectedValue(new Error("SMTP connection refused"));
+
+    const req = { body: { email: "user@example.com" } };
+    const res = {
+      status: jest.fn().mockReturnThis(),
+      json: jest.fn(),
+    };
+    const next = jest.fn();
+
+    await authController.forgotPassword(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(500);
+    expect(res.json).toHaveBeenCalledWith({
+      error: expect.stringContaining("Unable to send reset email"),
     });
   });
 

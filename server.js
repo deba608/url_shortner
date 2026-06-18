@@ -8,11 +8,18 @@ const config = require("./src/config");
 const app = require("./src/app");
 const logger = require("./src/config/logger");
 const redisClient = require("./src/config/redis");
+const { verifyEmailTransport } = require("./src/utils/emailService");
 
 async function startServer() {
   try {
     await redisClient.ping();
     logger.info("Redis connected successfully");
+
+    // Verify email transport non-blocking so SMTP credential issues surface
+    // in the deploy logs immediately.
+    verifyEmailTransport().catch((err) =>
+      logger.error("Unexpected error during email transport verification", { error: err.message })
+    );
 
     const server = app.listen(config.port, () => {
       logger.info(`Server running on port ${config.port} (${config.nodeEnv})`);

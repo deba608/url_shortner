@@ -1,25 +1,52 @@
 const nodemailer = require("nodemailer");
 const logger = require("../config/logger");
 
-// Use explicit SMTP settings instead of service shorthand
-// — required for reliable delivery from cloud hosts like Render
+// Gmail is the supported provider. Using the built-in service shorthand lets
+// Nodemailer pick the correct host/port/TLS settings, which is more reliable
+// across local development and cloud hosts (Render, Vercel, etc.) than hard-
+// coding port 465 SSL.
 const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // SSL
+  service: "gmail",
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_APP_PASSWORD,
   },
-  tls: {
-    rejectUnauthorized: false,
-  },
 });
+
+/**
+ * Verify the SMTP connection at startup. This is non-blocking and logs the
+ * result so deployment issues (wrong app password, account disabled, etc.) are
+ * visible immediately in the logs instead of only when a user requests a reset.
+ */
+const verifyEmailTransport = async () => {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
+    logger.warn("Email transport not configured; password-reset emails will not be sent", {
+      hasEmailUser: !!process.env.EMAIL_USER,
+      hasEmailAppPassword: !!process.env.EMAIL_APP_PASSWORD,
+    });
+    return false;
+  }
+
+  try {
+    await transporter.verify();
+    logger.info("Email transport verified successfully", { email: process.env.EMAIL_USER });
+    return true;
+  } catch (error) {
+    logger.error("Email transport verification failed", {
+      email: process.env.EMAIL_USER,
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      responseCode: error.responseCode,
+    });
+    return false;
+  }
+};
 
 const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
     logger.warn("EMAIL CREDENTIALS MISSING", { toEmail, resetUrl });
-    return;
+    return { success: false, error: "Email credentials not configured" };
   }
 
   const year = new Date().getFullYear();
@@ -93,9 +120,17 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   try {
     const info = await transporter.sendMail(mailOptions);
     logger.info(`Password reset email sent to ${toEmail}`, { messageId: info.messageId });
+    return { success: true, messageId: info.messageId };
   } catch (error) {
-    logger.error("Failed to send password reset email", { to: toEmail, error: error.message });
+    logger.error("Failed to send password reset email", {
+      to: toEmail,
+      error: error.message,
+      code: error.code,
+      command: error.command,
+      responseCode: error.responseCode,
+    });
+    return { success: false, error: error.message };
   }
 };
 
-module.exports = { sendPasswordResetEmail };
+module.exports = { sendPasswordResetEmail, verifyEmailTransport };
