@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const prisma = require("../config/database");
+const { sendPasswordResetEmail } = require("../utils/emailService");
 
 const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
 
@@ -150,10 +151,9 @@ const forgotPassword = async (req, res, next) => {
 
     const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
 
-    const { sendPasswordResetEmail } = require("../utils/emailService");
     await sendPasswordResetEmail(user.email, resetUrl);
 
-    res.status(200).json({ message: "If an account with that email exists, a reset link has been sent." });
+    res.status(200).json({ message: "A password reset link has been sent to your email address." });
   } catch (error) {
     next(error);
   }

@@ -122,8 +122,8 @@ Interactive docs at **`/api-docs`**. Summary:
 | `POST` | `/auth/verify-otp` | Verify the signup OTP and activate the account |
 | `POST` | `/auth/resend-otp` | Re-send the email-verification OTP |
 | `POST` | `/auth/login` | Log in (sets an HTTP-only session cookie) |
-| `POST` | `/auth/forgot-password` | Request a password-reset OTP via email |
-| `POST` | `/auth/reset-password` | Reset password using a valid OTP |
+| `POST` | `/auth/forgot-password` | Request a password-reset link via email |
+| `POST` | `/auth/reset-password` | Reset password using a valid reset token |
 | `GET` | `/auth/me` | Get the currently authenticated user |
 | `POST` | `/auth/logout` | Log out (clears the session cookie) |
 

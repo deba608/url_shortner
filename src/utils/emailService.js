@@ -1,4 +1,5 @@
 const nodemailer = require("nodemailer");
+const logger = require("../config/logger");
 
 // Use explicit SMTP settings instead of service shorthand
 // — required for reliable delivery from cloud hosts like Render
@@ -17,10 +18,7 @@ const transporter = nodemailer.createTransport({
 
 const sendPasswordResetEmail = async (toEmail, resetUrl) => {
   if (!process.env.EMAIL_USER || !process.env.EMAIL_APP_PASSWORD) {
-    console.log("─── EMAIL CREDENTIALS MISSING ────────────────────────");
-    console.log(`  Would have sent reset link to: ${toEmail}`);
-    console.log(`  Link: ${resetUrl}`);
-    console.log("──────────────────────────────────────────────────────");
+    logger.warn("EMAIL CREDENTIALS MISSING", { toEmail, resetUrl });
     return;
   }
 
@@ -94,10 +92,9 @@ const sendPasswordResetEmail = async (toEmail, resetUrl) => {
 
   try {
     const info = await transporter.sendMail(mailOptions);
-    console.log(`Password reset email successfully sent to ${toEmail} — MessageID: ${info.messageId}`);
+    logger.info(`Password reset email sent to ${toEmail}`, { messageId: info.messageId });
   } catch (error) {
-    console.error("Error sending email via Nodemailer:", error.message);
-    throw error; // re-throw so the controller can return a 500 if email fails
+    logger.error("Failed to send password reset email", { to: toEmail, error: error.message });
   }
 };
 
