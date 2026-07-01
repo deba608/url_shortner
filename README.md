@@ -89,9 +89,10 @@ erDiagram
     User ||--o{ Url : owns
     Url  ||--o{ Click : receives
     User {
-        int id PK
+        string id PK "uuid"
         string email UK
         string password
+        datetime passwordChangedAt
         datetime createdAt
     }
     Url {
@@ -101,7 +102,7 @@ erDiagram
         int clicks
         datetime createdAt
         datetime expiresAt
-        int userId FK
+        string userId FK
     }
     Click {
         int id PK
@@ -109,6 +110,11 @@ erDiagram
         datetime clickedAt
         string ipAddress
         string userAgent
+        string browser
+        string os
+        string device
+        string country
+        string referrer
     }
 ```
 

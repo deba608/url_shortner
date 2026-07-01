@@ -9,6 +9,7 @@ const redisClient = require("../config/redis");
 const logger = require("../config/logger");
 const config = require("../config");
 const ApiError = require("../utils/ApiError");
+const { validateUrlFormat } = require("../validators/urlValidator");
 const {
   SHORT_CODE_LENGTH,
   SUGGESTION_COUNT,
@@ -16,6 +17,17 @@ const {
   QR_CACHE_TTL,
   QR_PREFIX,
 } = require("../utils/constants");
+
+// Normalize a user-supplied destination the same way the create path does:
+// prepend http:// if no scheme, then enforce http/https. Throws ApiError on bad input.
+const normalizeAndValidateUrl = (raw) => {
+  let normalized = raw.trim();
+  if (!/^https?:\/\//i.test(normalized)) {
+    normalized = `http://${normalized}`;
+  }
+  validateUrlFormat(normalized); // throws 400 if not http/https or malformed
+  return normalized;
+};
 
 /**
  * Resolve a URL the given user owns, or throw. Centralizes the parseInt + NaN
@@ -472,9 +484,14 @@ const getTopUrls = async (userId) => {
 const updateOriginalUrl = async (urlId, userId, originalUrl) => {
   const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
 
+  // Enforce the same http/https rule as creation — the PATCH route has no
+  // validateUrl middleware, so validate here to prevent stored javascript:/file:
+  // destinations.
+  const normalizedUrl = normalizeAndValidateUrl(originalUrl);
+
   const updated = await prisma.url.update({
     where: { id: url.id },
-    data: { originalUrl },
+    data: { originalUrl: normalizedUrl },
   });
 
   // Invalidate the cached redirect entry so the new URL is served at once.
