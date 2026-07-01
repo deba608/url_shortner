@@ -5,7 +5,7 @@ Checkbox = done.
 
 ## 🔴 Security (high)
 
-- [ ] **1. User enumeration via auth responses.**
+- [x] **1. User enumeration via auth responses.**
   `forgotPassword` returns `404 "No account found with that email"`, `register`
   returns `"An account with this email already exists"`, and `login` timing
   differs for unknown vs known email. All leak which emails are registered.
@@ -21,7 +21,7 @@ Checkbox = done.
   before it. Or store a one-time reset token hash in DB and delete on use.
   Files: `prisma/schema.prisma`, `authController.js`, `authMiddleware.js`.
 
-- [ ] **3. Hardcoded JWT_SECRET fallback.**
+- [x] **3. Hardcoded JWT_SECRET fallback.**
   `const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev"` in
   `authController.js` and `authMiddleware.js`. If the env var is ever missing in
   prod, tokens are signed with a public string → full auth bypass.
@@ -29,7 +29,7 @@ Checkbox = done.
   allow fallback when `NODE_ENV !== production`). Single source of the secret.
   Files: `src/config/validateEnv.js`, `authController.js`, `authMiddleware.js`.
 
-- [ ] **4. No rate limiting on auth routes.**
+- [x] **4. No rate limiting on auth routes.**
   `/login` (brute force), `/forgot-password` (email-bomb + enumeration) only
   hit the global 100/15min limiter. Too loose.
   **Fix:** dedicated stricter limiter on `/api/auth/login`, `/forgot-password`,
@@ -42,7 +42,7 @@ Checkbox = done.
   **Fix:** restrict to the known project's preview pattern or an allowlist.
   Files: `src/app.js`.
 
-- [ ] **6. Weak password policy (min 6 chars).**
+- [x] **6. Weak password policy (min 6 chars).**
   **Fix:** raise to >= 8 and centralize the rule.
   Files: `authController.js`.
 
@@ -55,19 +55,19 @@ Checkbox = done.
   **Fix:** migrate auth to `catchAsync`/`ApiError`, move validation to a
   validator module.
 
-- [ ] **8. Redundant DB read on the hot redirect path.**
+- [x] **8. Redundant DB read on the hot redirect path.**
   `redirectToUrl` calls `getUrlByShortCode` (cached) then `recordClick` runs a
   second uncached `findUnique` on the same shortCode for every click.
   **Fix:** pass the already-fetched `url.id` into `recordClick`.
   Files: `urlController.js`, `urlService.js`.
 
-- [ ] **9. Duplicated ownership-lookup boilerplate.**
+- [x] **9. Duplicated ownership-lookup boilerplate.**
   `getQrCode`, `updateExpiration`, `deleteUrl` repeat: parseInt → NaN check →
   `findFirst({id,userId})` → 404. `getUrlAnalytics` uses `parseInt` w/o radix.
   **Fix:** extract a `findOwnedUrlOr404(urlId, userId, select)` helper.
   Files: `urlService.js`.
 
-- [ ] **10. Dead code in createShortUrl controller.**
+- [x] **10. Dead code in createShortUrl controller.**
   `const expiry = resolved === undefined ? undefined : resolved;` == `resolved`.
   Files: `urlController.js`.
 
