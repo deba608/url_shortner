@@ -4,6 +4,7 @@ import { useAnalytics } from "@/hooks/useAnalytics";
 import { ROUTES } from "@/utils/constants";
 import { formatDateTime, buildDailySeries } from "@/utils/format";
 import ClicksChart from "@/components/analytics/ClicksChart";
+import BreakdownPanel from "@/components/analytics/BreakdownPanel";
 import Skeleton from "@/components/ui/Skeleton";
 
 function MetricCard({ label, value, loading, icon, color = "indigo" }) {
@@ -117,6 +118,17 @@ export default function Analytics() {
                 <p className="text-xs text-gray-400 mt-0.5">Daily breakdown of link clicks</p>
               </div>
               <ClicksChart data={series} />
+            </div>
+          )}
+
+          {/* Grouped breakdowns */}
+          {!loading && data && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              <BreakdownPanel title="Browser" items={data.byBrowser} />
+              <BreakdownPanel title="OS" items={data.byOs} />
+              <BreakdownPanel title="Device" items={data.byDevice} />
+              <BreakdownPanel title="Country" items={data.byCountry} />
+              <BreakdownPanel title="Referrer" items={data.byReferrer} />
             </div>
           )}
         </>

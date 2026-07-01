@@ -25,8 +25,8 @@ export const getUrlAnalytics = async (id, config) => {
   return data.data;
 };
 
-export const getUrlQrCode = async (id) => {
-  const { data } = await axiosClient.get(`/urls/${id}/qrcode`);
+export const getUrlQrCode = async (id, params = {}) => {
+  const { data } = await axiosClient.get(`/urls/${id}/qrcode`, { params });
   return {
     ...data.data,
     shortUrl: `${window.location.origin}/${data.data.shortCode}`,
@@ -35,5 +35,10 @@ export const getUrlQrCode = async (id) => {
 
 export const deleteUrl = async (id) => {
   const { data } = await axiosClient.delete(`/urls/${id}`);
+  return data.data;
+};
+
+export const updateOriginalUrl = async (id, originalUrl) => {
+  const { data } = await axiosClient.patch(`/urls/${id}`, { originalUrl });
   return data.data;
 };
