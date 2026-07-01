@@ -1,5 +1,9 @@
 const { nanoid } = require("nanoid");
 const QRCode = require("qrcode");
+const UAParser = require("ua-parser-js");
+const geoip = require("geoip-lite");
+const crypto = require("crypto");
+const sharp = require("sharp");
 const prisma = require("../config/database");
 const redisClient = require("../config/redis");
 const logger = require("../config/logger");

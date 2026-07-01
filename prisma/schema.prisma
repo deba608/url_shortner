@@ -47,6 +47,11 @@ model Click {
   clickedAt DateTime @default(now())
   ipAddress String?
   userAgent String?
+  browser   String?
+  os        String?
+  device    String?
+  country   String?
+  referrer  String?
 
   @@index([urlId])
   // Composite index backs the per-url daily/weekly click counts (filter by urlId,
