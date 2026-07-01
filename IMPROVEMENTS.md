@@ -36,7 +36,7 @@ Checkbox = done.
   `/reset-password` (e.g. 5–10 / 15min per IP).
   Files: `src/middlewares/rateLimiter.js`, `src/routes/authRoutes.js`.
 
-- [ ] **5. CORS allows every `*.vercel.app` with credentials.**
+- [x] **5. CORS allows every `*.vercel.app` with credentials.**
   `origin.endsWith(".vercel.app")` + `credentials: true` lets any Vercel-hosted
   site make authenticated cross-origin calls. Broad for a credentialed API.
   **Fix:** restrict to the known project's preview pattern or an allowlist.
@@ -48,7 +48,7 @@ Checkbox = done.
 
 ## 🟡 Consistency / quality (medium)
 
-- [ ] **7. authController diverges from the app's error pattern.**
+- [x] **7. authController diverges from the app's error pattern.**
   Rest of app uses `catchAsync` + `ApiError` + `{status,message}` shape. Auth
   uses manual `try/catch` and `res.status().json({ error })`. Inconsistent
   client contract + duplicated validation.
@@ -73,7 +73,7 @@ Checkbox = done.
 
 ## 🟢 Missing / nice-to-have (low)
 
-- [ ] **11. No auth tests.** Tests cover url/analytics/qr/email/redis/expiration
+- [x] **11. No auth tests.** Tests cover url/analytics/qr/email/redis/expiration
   but not register/login/forgot/reset. Add `tests/auth.test.js`.
 
 - [ ] **12. Analytics `uniqueVisitors` loads all click rows via groupBy** just to

@@ -26,14 +26,19 @@ const allowedOrigins = [
   process.env.FRONTEND_URL, // overrideable via env var
 ].filter(Boolean);
 
+// Match ONLY this project's own Vercel preview deploys, e.g.
+// shortly-devv-git-<branch>-<scope>.vercel.app or shortly-devv-<hash>.vercel.app.
+// A blanket *.vercel.app allowlist would let any Vercel-hosted site make
+// credentialed cross-origin calls — too broad for a cookie-auth API.
+const VERCEL_PREVIEW = /^https:\/\/shortly-devv(-[a-z0-9-]+)?\.vercel\.app$/;
+
 app.use(
   cors({
     origin: (origin, cb) => {
       if (!origin) return cb(null, true); // curl, Postman, server-to-server
       if (allowedOrigins.includes(origin)) return cb(null, true);
       if (origin.startsWith("http://localhost:")) return cb(null, true);
-      // Allow all Vercel preview deployments (*.vercel.app)
-      if (origin.endsWith(".vercel.app")) return cb(null, true);
+      if (VERCEL_PREVIEW.test(origin)) return cb(null, true);
       cb(new Error(`CORS: origin '${origin}' not allowed`));
     },
     credentials: true,

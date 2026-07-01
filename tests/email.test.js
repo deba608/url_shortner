@@ -26,6 +26,10 @@ jest.mock("../src/config/logger", () => ({
 const { sendPasswordResetEmail, verifyEmailTransport } = require("../src/utils/emailService");
 const authController = require("../src/controllers/authController");
 
+// catchAsync doesn't return its inner promise, so next(err) can fire a tick
+// after the handler call returns — flush the queue before asserting.
+const flush = () => new Promise((r) => setImmediate(r));
+
 describe("sendPasswordResetEmail", () => {
   const OLD_ENV = process.env;
 
@@ -176,6 +180,7 @@ describe("forgotPassword controller", () => {
     const next = jest.fn();
 
     await authController.forgotPassword(req, res, next);
+    await flush();
 
     expect(prisma.user.findUnique).toHaveBeenCalledWith({
       where: { email: "user@example.com" },
@@ -188,11 +193,11 @@ describe("forgotPassword controller", () => {
     );
     expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
-      message: expect.stringContaining("reset link has been sent"),
+      message: expect.stringContaining("If an account exists"),
     });
   });
 
-  it("returns 500 when email fails to send", async () => {
+  it("surfaces a 500 ApiError via next when email fails to send", async () => {
     const prisma = require("../src/config/database");
     prisma.user.findUnique.mockResolvedValue({
       id: 1,
@@ -210,14 +215,17 @@ describe("forgotPassword controller", () => {
     const next = jest.fn();
 
     await authController.forgotPassword(req, res, next);
+    await flush();
 
-    expect(res.status).toHaveBeenCalledWith(500);
-    expect(res.json).toHaveBeenCalledWith({
-      error: expect.stringContaining("Unable to send reset email"),
-    });
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 500,
+        message: expect.stringContaining("Unable to send reset email"),
+      })
+    );
   });
 
-  it("returns 404 when user is not found", async () => {
+  it("returns a generic 200 (no enumeration) when the user is not found", async () => {
     const prisma = require("../src/config/database");
     prisma.user.findUnique.mockResolvedValue(null);
 
@@ -229,15 +237,16 @@ describe("forgotPassword controller", () => {
     const next = jest.fn();
 
     await authController.forgotPassword(req, res, next);
+    await flush();
 
-    expect(res.status).toHaveBeenCalledWith(404);
+    expect(res.status).toHaveBeenCalledWith(200);
     expect(res.json).toHaveBeenCalledWith({
-      error: expect.stringContaining("No account found"),
+      message: expect.stringContaining("If an account exists"),
     });
     expect(mockSendMail).not.toHaveBeenCalled();
   });
 
-  it("returns 400 when email is missing", async () => {
+  it("surfaces a 400 ApiError via next when email is missing", async () => {
     const req = { body: {} };
     const res = {
       status: jest.fn().mockReturnThis(),
@@ -246,11 +255,14 @@ describe("forgotPassword controller", () => {
     const next = jest.fn();
 
     await authController.forgotPassword(req, res, next);
+    await flush();
 
-    expect(res.status).toHaveBeenCalledWith(400);
-    expect(res.json).toHaveBeenCalledWith({
-      error: expect.stringContaining("Email is required"),
-    });
+    expect(next).toHaveBeenCalledWith(
+      expect.objectContaining({
+        statusCode: 400,
+        message: expect.stringContaining("Email is required"),
+      })
+    );
   });
 
   it("generates a reset URL with a valid JWT token", async () => {
@@ -270,6 +282,7 @@ describe("forgotPassword controller", () => {
     const next = jest.fn();
 
     await authController.forgotPassword(req, res, next);
+    await flush();
 
     const mailCall = mockSendMail.mock.calls[0][0];
     const resetUrl = mailCall.html.match(/href="([^"]+)"/)[1];
@@ -279,8 +292,10 @@ describe("forgotPassword controller", () => {
     const urlObj = new URL(resetUrl);
     const token = urlObj.searchParams.get("token");
 
+    // Verify with the same secret the controller signed with (from config).
     const jwt = require("jsonwebtoken");
-    const decoded = jwt.verify(token, "fallback-secret-for-dev");
+    const { jwtSecret } = require("../src/config");
+    const decoded = jwt.verify(token, jwtSecret);
     expect(decoded.email).toBe("user@example.com");
     expect(decoded.type).toBe("password_reset");
   });
