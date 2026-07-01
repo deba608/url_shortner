@@ -13,6 +13,33 @@ const {
   QR_PREFIX,
 } = require("../utils/constants");
 
+/**
+ * Resolve a URL the given user owns, or throw. Centralizes the parseInt + NaN
+ * guard + ownership `findFirst` + 404 that several handlers repeated.
+ *
+ * @param {string|number} urlId  raw id from the request params
+ * @param {string} userId        owner id
+ * @param {object} [select]      optional Prisma `select` projection
+ * @returns the matching url row
+ */
+const findOwnedUrlOr404 = async (urlId, userId, select) => {
+  const id = parseInt(urlId, 10);
+  if (Number.isNaN(id)) {
+    throw new ApiError(400, "Invalid URL id");
+  }
+
+  const url = await prisma.url.findFirst({
+    where: { id, userId },
+    ...(select ? { select } : {}),
+  });
+
+  if (!url) {
+    throw new ApiError(404, "URL not found or unauthorized");
+  }
+
+  return url;
+};
+
 const generateSuggestions = async (baseAlias) => {
   const candidates = new Set();
 
@@ -136,19 +163,7 @@ const getUrlByShortCode = async (shortCode) => {
  * @returns {{ dataUrl: string, shortUrl: string, shortCode: string }}
  */
 const getQrCode = async (urlId, userId) => {
-  const id = parseInt(urlId, 10);
-  if (Number.isNaN(id)) {
-    throw new ApiError(400, "Invalid URL id");
-  }
-
-  const url = await prisma.url.findFirst({
-    where: { id, userId },
-    select: { id: true, shortCode: true },
-  });
-
-  if (!url) {
-    throw new ApiError(404, "URL not found or unauthorized");
-  }
+  const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
 
   const cacheKey = `${QR_PREFIX}${url.shortCode}`;
   const shortUrl = `${config.baseUrl}/${url.shortCode}`;
@@ -177,19 +192,7 @@ const getQrCode = async (urlId, userId) => {
  * @param {Date|null} expiresAt absolute expiry, or null to clear it.
  */
 const updateExpiration = async (urlId, userId, expiresAt) => {
-  const id = parseInt(urlId, 10);
-  if (Number.isNaN(id)) {
-    throw new ApiError(400, "Invalid URL id");
-  }
-
-  const url = await prisma.url.findFirst({
-    where: { id, userId },
-    select: { id: true, shortCode: true },
-  });
-
-  if (!url) {
-    throw new ApiError(404, "URL not found or unauthorized");
-  }
+  const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
 
   const updated = await prisma.url.update({
     where: { id: url.id },
@@ -207,19 +210,7 @@ const updateExpiration = async (urlId, userId, expiresAt) => {
  * the onDelete: Cascade relation. Also evicts the redirect + QR cache entries.
  */
 const deleteUrl = async (urlId, userId) => {
-  const id = parseInt(urlId, 10);
-  if (Number.isNaN(id)) {
-    throw new ApiError(400, "Invalid URL id");
-  }
-
-  const url = await prisma.url.findFirst({
-    where: { id, userId },
-    select: { id: true, shortCode: true },
-  });
-
-  if (!url) {
-    throw new ApiError(404, "URL not found or unauthorized");
-  }
+  const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
 
   await prisma.url.delete({ where: { id: url.id } });
 
@@ -230,22 +221,17 @@ const deleteUrl = async (urlId, userId) => {
   return { id: url.id, shortCode: url.shortCode };
 };
 
-const recordClick = async (shortCode, ipAddress, userAgent) => {
-  const url = await prisma.url.findUnique({
-    where: { shortCode },
-  });
-
-  if (!url) return null;
-
-  // Execute click recording and counter increment in a transaction
-  const [updatedUrl, clickRecord] = await prisma.$transaction([
+const recordClick = async (urlId, ipAddress, userAgent) => {
+  // Increment the counter and log the click in one transaction. The caller
+  // passes the already-resolved url id (redirect path), so no extra lookup here.
+  const [updatedUrl] = await prisma.$transaction([
     prisma.url.update({
-      where: { id: url.id },
+      where: { id: urlId },
       data: { clicks: { increment: 1 } },
     }),
     prisma.click.create({
       data: {
-        urlId: url.id,
+        urlId,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
       },
@@ -258,7 +244,7 @@ const recordClick = async (shortCode, ipAddress, userAgent) => {
 const getUrlAnalytics = async (urlId, userId) => {
   const url = await prisma.url.findFirst({
     where: {
-      id: parseInt(urlId),
+      id: parseInt(urlId, 10),
       userId: userId, // Ensure user owns the URL
     },
     include: {

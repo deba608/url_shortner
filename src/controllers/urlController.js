@@ -11,9 +11,8 @@ const createShortUrl = catchAsync(async (req, res) => {
 
   // resolveExpiration returns: Date (set), null (clear), or undefined (not provided).
   const resolved = resolveExpiration({ expiresIn, expiresAt });
-  const expiry = resolved === undefined ? undefined : resolved;
 
-  const result = await urlService.createShortUrl(url, customAlias, userId, expiry);
+  const result = await urlService.createShortUrl(url, customAlias, userId, resolved);
 
   res.status(201).json({
     status: "success",
@@ -39,8 +38,10 @@ const redirectToUrl = catchAsync(async (req, res) => {
   const ipAddress = req.ip || req.connection.remoteAddress;
   const userAgent = req.get('user-agent');
 
-  // Asynchronously record the click without blocking the redirect response
-  urlService.recordClick(shortCode, ipAddress, userAgent).catch(err => {
+  // Asynchronously record the click without blocking the redirect response.
+  // Pass the already-fetched id so recordClick skips a second lookup on this
+  // hot path (url came from getUrlByShortCode, possibly cache).
+  urlService.recordClick(url.id, ipAddress, userAgent).catch(err => {
     logger.error("Failed to record click", { shortCode, error: err.message });
   });
 

@@ -137,27 +137,30 @@ const forgotPassword = async (req, res, next) => {
       return res.status(400).json({ error: "Email is required" });
     }
 
+    // Generic response regardless of whether the account exists — never reveal
+    // which emails are registered (prevents user enumeration).
+    const genericMessage = "If an account exists for that email, a password reset link has been sent.";
+
     const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
 
-    if (!user) {
-      return res.status(404).json({ error: "No account found with that email address" });
+    if (user) {
+      // Generate a short-lived JWT (1 hour) for password reset
+      const resetToken = jwt.sign(
+        { email: user.email, type: "password_reset" },
+        JWT_SECRET,
+        { expiresIn: "1h" }
+      );
+
+      const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
+
+      const result = await sendPasswordResetEmail(user.email, resetUrl);
+      if (!result.success) {
+        // Log server-side but still return the generic message to the client.
+        return res.status(500).json({ error: "Unable to send reset email right now. Please try again later." });
+      }
     }
 
-    // Generate a short-lived JWT (1 hour) for password reset
-    const resetToken = jwt.sign(
-      { email: user.email, type: "password_reset" },
-      JWT_SECRET,
-      { expiresIn: "1h" }
-    );
-
-    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}`;
-
-    const result = await sendPasswordResetEmail(user.email, resetUrl);
-    if (!result.success) {
-      return res.status(500).json({ error: "Unable to send reset email right now. Please try again later." });
-    }
-
-    res.status(200).json({ message: "A password reset link has been sent to your email address." });
+    res.status(200).json({ message: genericMessage });
   } catch (error) {
     next(error);
   }

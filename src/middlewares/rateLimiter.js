@@ -22,5 +22,18 @@ const redirectRateLimiter = rateLimit({
     }
 });
 
+// Auth limiter — strict guard on credential + email-sending endpoints
+// (login brute force, forgot-password enumeration / email-bomb).
+// 10 requests per 15 minutes per IP.
+const authRateLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    message: {
+        success: false,
+        message: "Too many attempts. Please try again later."
+    }
+});
+
 module.exports = rateLimiter;
 module.exports.redirectRateLimiter = redirectRateLimiter;
+module.exports.authRateLimiter = authRateLimiter;
