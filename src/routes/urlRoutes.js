@@ -191,6 +191,42 @@ router.patch("/urls/:id/expiration", authenticateToken, urlController.updateExpi
 /**
  * @swagger
  * /urls/{id}:
+ *   patch:
+ *     summary: Change the destination URL behind an existing shortCode (owner only)
+ *     tags: [URLs]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - originalUrl
+ *             properties:
+ *               originalUrl:
+ *                 type: string
+ *                 example: https://new-example.com/page
+ *     responses:
+ *       200:
+ *         description: URL updated
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: URL not found or unauthorized
+ */
+router.patch("/urls/:id", authenticateToken, urlController.updateOriginalUrl);
+
+/**
+ * @swagger
+ * /urls/{id}:
  *   delete:
  *     summary: Delete a URL owned by the current user
  *     tags: [URLs]

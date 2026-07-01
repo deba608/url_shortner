@@ -463,6 +463,26 @@ const getTopUrls = async (userId) => {
   return topUrls;
 };
 
+/**
+ * Change the destination URL behind an existing shortCode. Owner-only.
+ * shortCode is immutable (QR codes and shared links keep working).
+ * Click history and analytics are preserved.
+ * Invalidates the redirect cache so the new URL takes effect immediately.
+ */
+const updateOriginalUrl = async (urlId, userId, originalUrl) => {
+  const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
+
+  const updated = await prisma.url.update({
+    where: { id: url.id },
+    data: { originalUrl },
+  });
+
+  // Invalidate the cached redirect entry so the new URL is served at once.
+  await redisClient.del(url.shortCode);
+
+  return updated;
+};
+
 module.exports = {
   createShortUrl,
   getUrlByShortCode,
@@ -472,5 +492,6 @@ module.exports = {
   getUserUrls,
   getQrCode,
   updateExpiration,
+  updateOriginalUrl,
   deleteUrl,
 };

@@ -139,6 +139,28 @@ const updateExpiration = catchAsync(async (req, res) => {
   });
 });
 
+const updateOriginalUrl = catchAsync(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+  const { originalUrl } = req.body;
+
+  if (!originalUrl || typeof originalUrl !== "string" || originalUrl.trim() === "") {
+    throw new ApiError(400, "originalUrl is required");
+  }
+
+  const result = await urlService.updateOriginalUrl(id, userId, originalUrl.trim());
+
+  res.json({
+    status: "success",
+    data: {
+      id: result.id,
+      shortCode: result.shortCode,
+      originalUrl: result.originalUrl,
+      shortUrl: `${config.baseUrl}/${result.shortCode}`,
+    },
+  });
+});
+
 const deleteUrl = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
@@ -160,5 +182,6 @@ module.exports = {
   getTopUrls,
   getQrCode,
   updateExpiration,
+  updateOriginalUrl,
   deleteUrl,
 };
