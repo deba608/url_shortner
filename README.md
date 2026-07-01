@@ -27,8 +27,10 @@ A production-style URL shortening service with authentication, click analytics, 
 - **Runtime:** Node.js 20, Express 5
 - **Database:** PostgreSQL + Prisma ORM 7 (with `@prisma/adapter-pg`)
 - **Cache:** Redis (ioredis)
-- **Auth:** JWT, bcrypt
-- **Email:** Resend API
+- **Auth:** JWT (HTTP-only cookie or Bearer), bcrypt
+- **Email:** Nodemailer (Gmail SMTP) for password-reset links
+- **Analytics:** ua-parser-js (browser/OS/device), geoip-lite (country)
+- **QR / images:** qrcode + sharp (avatar logo compositing)
 - **Logging:** Winston (structured) + Morgan (HTTP access)
 - **Docs:** swagger-jsdoc + swagger-ui-express
 - **Testing:** Jest, Supertest
@@ -119,14 +121,14 @@ Interactive docs at **`/api-docs`**. Summary:
 ### Auth
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/auth/register` | Register account (sends an email-verification OTP) |
-| `POST` | `/auth/verify-otp` | Verify the signup OTP and activate the account |
-| `POST` | `/auth/resend-otp` | Re-send the email-verification OTP |
+| `POST` | `/auth/register` | Register account (email + password, min 8 chars); sets an HTTP-only session cookie |
 | `POST` | `/auth/login` | Log in (sets an HTTP-only session cookie) |
-| `POST` | `/auth/forgot-password` | Request a password-reset link via email |
-| `POST` | `/auth/reset-password` | Reset password using a valid reset token |
+| `POST` | `/auth/forgot-password` | Request a password-reset link via email (generic response — no account enumeration) |
+| `POST` | `/auth/reset-password` | Reset password using a valid, single-use reset token |
 | `GET` | `/auth/me` | Get the currently authenticated user |
 | `POST` | `/auth/logout` | Log out (clears the session cookie) |
+
+Auth routes are rate-limited (10 requests / 15 min per IP). A password reset invalidates all existing sessions.
 
 ### URLs
 | Method | Path | Auth | Description |
@@ -134,18 +136,20 @@ Interactive docs at **`/api-docs`**. Summary:
 | `POST` | `/shorten` | optional | Create short URL. Body: `{ url, customAlias?, expiresIn?, expiresAt? }` |
 | `GET` | `/user` | required | List the caller's URLs |
 | `GET` | `/stats/:shortCode` | — | Basic stats for a code |
+| `PATCH` | `/urls/:id` | required | Edit the destination. Body: `{ originalUrl }` |
+| `DELETE` | `/urls/:id` | required | Delete an owned URL (cascades its click history) |
 | `GET` | `/:shortCode` | — | Redirect (`302`), or `410 Gone` if expired |
 
 ### Analytics
 | Method | Path | Auth | Returns |
 |---|---|---|---|
-| `GET` | `/urls/:id/analytics` | required | `totalClicks, uniqueVisitors, lastAccessed, dailyClicks, weeklyClicks, clickHistory` |
+| `GET` | `/urls/:id/analytics` | required | `totalClicks, uniqueVisitors, lastAccessed, dailyClicks, weeklyClicks, clickHistory` + breakdowns `byBrowser, byOs, byDevice, byCountry, byReferrer` |
 | `GET` | `/analytics/top-urls` | required | Top 10 most-clicked URLs |
 
 ### QR & Expiration
 | Method | Path | Auth | Description |
 |---|---|---|---|
-| `GET` | `/urls/:id/qrcode` | required | QR as base64 JSON (or raw PNG with `?format=png`) |
+| `GET` | `/urls/:id/qrcode` | required | QR as base64 JSON (default), raw PNG (`?format=png`) or SVG (`?format=svg`). Styling: `size, color, bg, margin`; `logo=true` embeds the user's avatar (PNG only) |
 | `PATCH` | `/urls/:id/expiration` | required | Set/clear expiry. Body: `{ expiresIn }` or `{ expiresAt }` (`null` clears) |
 
 ### Ops
@@ -159,8 +163,19 @@ Interactive docs at **`/api-docs`**. Summary:
 curl -X POST $BASE/shorten -H 'Content-Type: application/json' \
   -d '{"url":"https://example.com","expiresIn":"7d"}'
 
-# QR code as a PNG file
-curl "$BASE/urls/1/qrcode?format=png" -H "Authorization: Bearer $TOKEN" -o qr.png
+# Styled QR as a PNG file (red on white, 500px, with avatar logo)
+curl "$BASE/urls/1/qrcode?format=png&size=500&color=%23ff0000&logo=true" \
+  -H "Authorization: Bearer $TOKEN" -o qr.png
+
+# QR as SVG
+curl "$BASE/urls/1/qrcode?format=svg" -H "Authorization: Bearer $TOKEN" -o qr.svg
+
+# Full analytics with device/country/referrer breakdowns
+curl "$BASE/urls/1/analytics" -H "Authorization: Bearer $TOKEN"
+
+# Edit the destination behind an existing short code
+curl -X PATCH $BASE/urls/1 -H "Authorization: Bearer $TOKEN" \
+  -H 'Content-Type: application/json' -d '{"originalUrl":"https://new-example.com/page"}'
 
 # Change expiration to an absolute date
 curl -X PATCH $BASE/urls/1/expiration -H "Authorization: Bearer $TOKEN" \
