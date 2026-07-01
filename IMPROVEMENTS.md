@@ -13,7 +13,7 @@ Checkbox = done.
   whether the email exists. Keep register's message but consider generic.
   Files: `src/controllers/authController.js`.
 
-- [ ] **2. Password-reset tokens are not single-use / not invalidated.**
+- [x] **2. Password-reset tokens are not single-use / not invalidated.**
   Reset uses a stateless 1h JWT. After a password change the old reset token
   (and any issued JWT session token) stays valid for its full lifetime. A leaked
   reset link works repeatedly for an hour.
@@ -76,7 +76,7 @@ Checkbox = done.
 - [x] **11. No auth tests.** Tests cover url/analytics/qr/email/redis/expiration
   but not register/login/forgot/reset. Add `tests/auth.test.js`.
 
-- [ ] **12. Analytics `uniqueVisitors` loads all click rows via groupBy** just to
+- [x] **12. Analytics `uniqueVisitors` loads all click rows via groupBy** just to
   take `.length`. At scale prefer a distinct-count query. Add `Click.clickedAt`
   index for the daily/weekly `count` queries.
   Files: `prisma/schema.prisma`, `urlService.js`.

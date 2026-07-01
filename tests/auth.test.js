@@ -188,7 +188,6 @@ describe("resetPassword", () => {
 
   it("updates the password for a valid token", async () => {
     mockVerify.mockReturnValue({ type: "password_reset", email: "a@b.com", iat: 3000 });
-    mockVerify.mockReturnValue({ type: "password_reset", email: "a@b.com" });
     mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.com" });
     mockUserUpdate.mockResolvedValue({});
     const { res, err } = await run(authController.resetPassword, { body: { token: "x", password: "password1" } });
