@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axiosClient from "@/api/axiosClient";
-import Spinner from "@/components/ui/Spinner";
 
 // Preflight the short code before navigating away from the SPA. A blind
 // window.location.replace() can't observe a 404/410 — the browser would just

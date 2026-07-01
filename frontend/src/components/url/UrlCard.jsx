@@ -168,8 +168,7 @@ export default function UrlCard({ url, onDeleted }) {
             setSaving(true);
             setError("");
             try {
-              const result = await updateOriginalUrl(url.id, editUrl);
-              url.originalUrl = result.originalUrl;
+              await updateOriginalUrl(url.id, editUrl);
               setEditOpen(false);
               toast("Link updated", "success");
               onDeleted?.();
