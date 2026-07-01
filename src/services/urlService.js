@@ -122,8 +122,15 @@ const getUserUrls = async (userId) => {
 };
 
 const getUrlByShortCode = async (shortCode) => {
-  // 1. Before querying PostgreSQL, check Redis
-  const cachedUrl = await redisClient.get(shortCode);
+  // 1. Before querying PostgreSQL, check Redis. The cache is an optimization,
+  // not a dependency — if Redis is down, log and fall through to the database so
+  // redirects keep working (availability on the hot path).
+  let cachedUrl = null;
+  try {
+    cachedUrl = await redisClient.get(shortCode);
+  } catch (err) {
+    logger.error("Redis GET failed; falling back to DB", { shortCode, error: err.message });
+  }
 
   // 2. If Redis contains the URL
   if (cachedUrl) {
@@ -141,7 +148,8 @@ const getUrlByShortCode = async (shortCode) => {
     throw new ApiError(404, "URL not found");
   }
 
-  // 4. Store the result in Redis.
+  // 4. Store the result in Redis. Best-effort — a cache write failure must not
+  // fail the redirect.
   // Cap the TTL so the cache never outlives the URL's own expiry — otherwise an
   // expired URL could keep serving 410-but-cached data, and conversely a stale
   // entry could survive past expiry. We use min(default TTL, seconds-until-expiry).
@@ -150,7 +158,11 @@ const getUrlByShortCode = async (shortCode) => {
     const secondsUntilExpiry = Math.floor((new Date(url.expiresAt).getTime() - Date.now()) / 1000);
     ttl = Math.min(ttl, Math.max(secondsUntilExpiry, 1));
   }
-  await redisClient.set(shortCode, JSON.stringify(url), "EX", ttl);
+  try {
+    await redisClient.set(shortCode, JSON.stringify(url), "EX", ttl);
+  } catch (err) {
+    logger.error("Redis SET failed; serving uncached", { shortCode, error: err.message });
+  }
 
   return url;
 };

@@ -80,3 +80,23 @@ Checkbox = done.
   take `.length`. At scale prefer a distinct-count query. Add `Click.clickedAt`
   index for the daily/weekly `count` queries.
   Files: `prisma/schema.prisma`, `urlService.js`.
+
+---
+
+## Round 2 (post-audit)
+
+- [x] **B. Redis was a hard dependency on the redirect hot path.**
+  `getUrlByShortCode` let a Redis GET/SET error bubble up → redirects 500 even
+  when Postgres is healthy. Now cache ops are best-effort: on error, log and fall
+  back to the DB. Files: `src/services/urlService.js`. Tests added.
+
+- [x] **C. redis.js logged via console.error instead of winston.**
+  Now routed through the structured logger. Files: `src/config/redis.js`.
+
+- [ ] **A. prestart.js runs `prisma db push --accept-data-loss` every prod deploy.**
+  Prod ignores migration history (this file force-pushes schema.prisma), so
+  migration files never run in prod, AND any column/table removal silently
+  DESTROYS production data on the next deploy. Intentional per the file comment,
+  but high-risk. **Recommend:** switch prod to `prisma migrate deploy` and drop
+  `--accept-data-loss`, after reconciling the migration drift. Needs a decision.
+  Files: `scripts/prestart.js`, `package.json`.

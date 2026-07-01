@@ -81,6 +81,22 @@ describe("getUrlByShortCode (cache behaviour)", () => {
     mockUrlFindUnique.mockResolvedValue(null);
     await expect(urlService.getUrlByShortCode("missing")).rejects.toMatchObject({ statusCode: 404 });
   });
+
+  it("falls back to the DB when Redis GET throws (Redis down)", async () => {
+    mockRedisGet.mockRejectedValue(new Error("ECONNREFUSED"));
+    mockUrlFindUnique.mockResolvedValue({ shortCode: "abc", originalUrl: "https://x.com", expiresAt: null });
+    const result = await urlService.getUrlByShortCode("abc");
+    expect(result.originalUrl).toBe("https://x.com");
+    expect(mockUrlFindUnique).toHaveBeenCalled();
+  });
+
+  it("still returns the URL when Redis SET throws on a miss", async () => {
+    mockRedisGet.mockResolvedValue(null);
+    mockRedisSet.mockRejectedValue(new Error("ECONNREFUSED"));
+    mockUrlFindUnique.mockResolvedValue({ shortCode: "abc", originalUrl: "https://x.com", expiresAt: null });
+    const result = await urlService.getUrlByShortCode("abc");
+    expect(result.originalUrl).toBe("https://x.com");
+  });
 });
 
 describe("updateExpiration", () => {
