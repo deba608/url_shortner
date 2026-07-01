@@ -173,10 +173,20 @@ const resetPassword = catchAsync(async (req, res) => {
     throw new ApiError(400, "User not found");
   }
 
+  // Single-use: a reset token issued before the last password change (e.g. a
+  // token already consumed once, or issued before an earlier reset) is dead.
+  // decoded.iat is in seconds; compare against passwordChangedAt.
+  if (
+    user.passwordChangedAt &&
+    decoded.iat * 1000 < new Date(user.passwordChangedAt).getTime()
+  ) {
+    throw new ApiError(400, "Invalid or expired reset token");
+  }
+
   const hashedPassword = await bcrypt.hash(password, 10);
   await prisma.user.update({
     where: { email: decoded.email },
-    data: { password: hashedPassword },
+    data: { password: hashedPassword, passwordChangedAt: new Date() },
   });
 
   res.status(200).json({ message: "Password has been reset successfully. You can now log in." });

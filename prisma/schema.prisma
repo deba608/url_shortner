@@ -12,14 +12,17 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  avatar    String?
-  password  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
-  urls      Url[]
+  id                String    @id @default(uuid())
+  email             String    @unique
+  name              String?
+  avatar            String?
+  password          String
+  // Set whenever the password changes. Session + reset tokens issued before this
+  // instant are rejected — gives single-use resets and logout-everywhere on reset.
+  passwordChangedAt DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
+  urls              Url[]
 }
 
 model Url {
@@ -46,4 +49,7 @@ model Click {
   userAgent String?
 
   @@index([urlId])
+  // Composite index backs the per-url daily/weekly click counts (filter by urlId,
+  // range on clickedAt) and the latest-click / history ordering.
+  @@index([urlId, clickedAt])
 }

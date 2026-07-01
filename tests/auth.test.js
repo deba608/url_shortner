@@ -173,7 +173,21 @@ describe("resetPassword", () => {
     expect(err).toMatchObject({ statusCode: 400, message: "Invalid reset token" });
   });
 
+  it("rejects a reused token issued before the last password change", async () => {
+    // Token issued at t=1000s; password already changed at a later instant.
+    mockVerify.mockReturnValue({ type: "password_reset", email: "a@b.com", iat: 1000 });
+    mockUserFindUnique.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      passwordChangedAt: new Date(2000 * 1000),
+    });
+    const { err } = await run(authController.resetPassword, { body: { token: "x", password: "password1" } });
+    expect(err).toMatchObject({ statusCode: 400, message: "Invalid or expired reset token" });
+    expect(mockUserUpdate).not.toHaveBeenCalled();
+  });
+
   it("updates the password for a valid token", async () => {
+    mockVerify.mockReturnValue({ type: "password_reset", email: "a@b.com", iat: 3000 });
     mockVerify.mockReturnValue({ type: "password_reset", email: "a@b.com" });
     mockUserFindUnique.mockResolvedValue({ id: "u1", email: "a@b.com" });
     mockUserUpdate.mockResolvedValue({});
@@ -181,7 +195,9 @@ describe("resetPassword", () => {
     expect(err).toBeNull();
     expect(res.statusCode).toBe(200);
     expect(mockUserUpdate).toHaveBeenCalledWith(
-      expect.objectContaining({ data: { password: "hashed-pw" } })
+      expect.objectContaining({
+        data: expect.objectContaining({ password: "hashed-pw", passwordChangedAt: expect.any(Date) }),
+      })
     );
   });
 });

@@ -1,5 +1,20 @@
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = require("../config").jwtSecret;
+const prisma = require("../config/database");
+
+// A session token is stale if it was issued (iat, seconds) before the user's
+// last password change — this is how a password reset logs out old sessions.
+// Returns true when the token must be rejected.
+const isSessionStale = async (decoded) => {
+  if (!decoded?.id) return false;
+  const user = await prisma.user.findUnique({
+    where: { id: decoded.id },
+    select: { passwordChangedAt: true },
+  });
+  if (!user) return true; // user gone → token invalid
+  if (!user.passwordChangedAt) return false;
+  return decoded.iat * 1000 < new Date(user.passwordChangedAt).getTime();
+};
 
 // Pull the JWT from the cookie OR the Authorization: Bearer header. The Bearer
 // path is what works cross-site (Vercel frontend → Render API), where the
@@ -12,7 +27,7 @@ const getToken = (req) => {
 };
 
 // For strictly protected routes
-const authenticateToken = (req, res, next) => {
+const authenticateToken = async (req, res, next) => {
   const token = getToken(req);
 
   if (!token) {
@@ -21,6 +36,9 @@ const authenticateToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    if (await isSessionStale(decoded)) {
+      return res.status(401).json({ error: "Unauthorized: Session expired" });
+    }
     req.user = decoded; // { id: "user-id", ... }
     next();
   } catch (err) {
@@ -29,13 +47,15 @@ const authenticateToken = (req, res, next) => {
 };
 
 // For routes where auth is optional
-const optionalAuthenticateToken = (req, res, next) => {
+const optionalAuthenticateToken = async (req, res, next) => {
   const token = getToken(req);
 
   if (token) {
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.user = decoded;
+      if (!(await isSessionStale(decoded))) {
+        req.user = decoded;
+      }
     } catch (err) {
       // Ignore invalid token for optional routes
     }

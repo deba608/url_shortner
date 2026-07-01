@@ -265,17 +265,14 @@ const getUrlAnalytics = async (urlId, userId) => {
   const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
   // Run the independent aggregations concurrently to keep latency low.
-  const [lastClick, uniqueGroups, dailyClicks, weeklyClicks] = await Promise.all([
+  const [lastClick, uniqueRows, dailyClicks, weeklyClicks] = await Promise.all([
     prisma.click.findFirst({
       where: { urlId: url.id },
       orderBy: { clickedAt: "desc" },
     }),
-    // Unique visitors approximated by distinct IP address. groupBy returns one
-    // row per distinct ipAddress; its length is the unique count.
-    prisma.click.groupBy({
-      by: ["ipAddress"],
-      where: { urlId: url.id },
-    }),
+    // Unique visitors ≈ distinct IP addresses. COUNT(DISTINCT ...) does the work
+    // in the DB and returns a single number, instead of shipping one row per IP.
+    prisma.$queryRaw`SELECT COUNT(DISTINCT "ipAddress")::int AS count FROM "Click" WHERE "urlId" = ${url.id}`,
     prisma.click.count({
       where: { urlId: url.id, clickedAt: { gte: oneDayAgo } },
     }),
@@ -286,7 +283,7 @@ const getUrlAnalytics = async (urlId, userId) => {
 
   return {
     totalClicks: url.clicks,
-    uniqueVisitors: uniqueGroups.length,
+    uniqueVisitors: uniqueRows[0]?.count ?? 0,
     lastAccessed: lastClick ? lastClick.clickedAt : null,
     dailyClicks,
     weeklyClicks,

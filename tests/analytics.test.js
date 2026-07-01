@@ -4,8 +4,8 @@
 const mockUrlFindFirst = jest.fn();
 const mockUrlFindMany = jest.fn();
 const mockClickFindFirst = jest.fn();
-const mockClickGroupBy = jest.fn();
 const mockClickCount = jest.fn();
+const mockQueryRaw = jest.fn();
 
 jest.mock("../src/config/database", () => ({
   url: {
@@ -14,9 +14,9 @@ jest.mock("../src/config/database", () => ({
   },
   click: {
     findFirst: (...a) => mockClickFindFirst(...a),
-    groupBy: (...a) => mockClickGroupBy(...a),
     count: (...a) => mockClickCount(...a),
   },
+  $queryRaw: (...a) => mockQueryRaw(...a),
 }));
 
 jest.mock("../src/config/redis", () => ({
@@ -44,8 +44,8 @@ describe("getUrlAnalytics", () => {
       clickHistory: [{ id: 1 }, { id: 2 }],
     });
     mockClickFindFirst.mockResolvedValue({ clickedAt: new Date("2026-06-16T00:00:00Z") });
-    // Two distinct IPs -> uniqueVisitors = 2
-    mockClickGroupBy.mockResolvedValue([{ ipAddress: "1.1.1.1" }, { ipAddress: "2.2.2.2" }]);
+    // COUNT(DISTINCT ipAddress) -> uniqueVisitors = 2
+    mockQueryRaw.mockResolvedValue([{ count: 2 }]);
     // count is called twice: daily then weekly
     mockClickCount.mockResolvedValueOnce(3).mockResolvedValueOnce(7);
 
@@ -66,7 +66,7 @@ describe("getUrlAnalytics", () => {
   it("reports null lastAccessed when there are no clicks", async () => {
     mockUrlFindFirst.mockResolvedValue({ id: 1, clicks: 0, createdAt: new Date(), clickHistory: [] });
     mockClickFindFirst.mockResolvedValue(null);
-    mockClickGroupBy.mockResolvedValue([]);
+    mockQueryRaw.mockResolvedValue([{ count: 0 }]);
     mockClickCount.mockResolvedValue(0);
 
     const result = await urlService.getUrlAnalytics("1", 1);
