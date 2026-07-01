@@ -33,6 +33,14 @@ export const getUrlQrCode = async (id, params = {}) => {
   };
 };
 
+// png/svg formats return a raw binary body. Fetch as a blob through the
+// authenticated axios client (an <img src> to the API can't send the auth token
+// and breaks cross-origin), then the caller turns it into an object URL.
+export const getUrlQrCodeBlob = async (id, params = {}) => {
+  const res = await axiosClient.get(`/urls/${id}/qrcode`, { params, responseType: "blob" });
+  return res.data; // Blob
+};
+
 export const deleteUrl = async (id) => {
   const { data } = await axiosClient.delete(`/urls/${id}`);
   return data.data;
