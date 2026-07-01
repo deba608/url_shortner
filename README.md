@@ -209,9 +209,34 @@ This repo ships a **`render.yaml` Blueprint** that provisions the web service, a
 4. After the first deploy, set **`BASE_URL`** to the service's public URL (e.g. `https://url-shortener-api.onrender.com`) so generated short links use the right host.
 
 Key Blueprint choices:
-- **Migrations run on deploy** via `npx prisma migrate deploy` in the start command (idempotent, non-interactive).
+- **Migrations run on deploy** via `npx prisma migrate deploy` (in `scripts/prestart.js`) — idempotent, non-interactive, and non-destructive. A failed migration aborts startup instead of serving a half-migrated schema.
 - **Health checks** point at `/health`, which verifies both Postgres and Redis.
 - **Graceful shutdown** on `SIGTERM` lets in-flight requests drain.
+
+### Database migrations
+
+Deploys apply pending migrations with `prisma migrate deploy` (never `db push`), so
+migration files under `prisma/migrations/` are the source of truth.
+
+**One-time baseline:** this project previously deployed with `db push`, so an
+existing production database may already have the schema without the matching rows
+in Prisma's `_prisma_migrations` table. On the first deploy of the migrate-based
+flow, mark each already-applied migration as applied once, against the prod DB:
+
+```bash
+for m in \
+  20260615114144_init \
+  20260615123848_add_clicks \
+  20260616120000_add_url_expiration \
+  20260616130000_add_users_and_url_ownership \
+  20260617000000_add_otp_and_email_verification \
+  20260617150519_add_name_and_avatar \
+  20260702000000_add_password_changed_at_and_click_index; do
+  npx prisma migrate resolve --applied "$m"
+done
+```
+
+After baselining, subsequent `migrate deploy` runs only apply genuinely new migrations.
 
 ---
 
