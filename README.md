@@ -9,8 +9,9 @@ A production-style URL shortening service with authentication, click analytics, 
 |---|---|
 | **Core** | Shorten URLs with random or custom aliases; collision-safe alias suggestions |
 | **Auth** | JWT, bcrypt password hashing, Email OTP Verification via Resend, Password Reset, user-owned links |
-| **Analytics** | Per-redirect click tracking: total clicks, unique visitors, daily/weekly counts, last accessed, top URLs |
-| **QR codes** | On-demand QR generation (base64 JSON or raw PNG), Redis-cached |
+| **Analytics** | Per-redirect click tracking: total clicks, unique visitors, daily/weekly counts, last accessed, top URLs, plus breakdowns by browser, OS, device, country (geoip), and referrer |
+| **QR codes** | On-demand QR generation — JSON data URL, raw PNG, or SVG; customizable size, colors, margin; optional avatar center logo (PNG); Redis-cached per style |
+| **Link management** | Edit a link's destination URL after creation (`PATCH /urls/:id`); update/clear expiration; delete |
 | **Expiration** | Expire links by date or after N days; expired links return `410 Gone` |
 | **Performance** | Redis read-through cache for redirects with expiry-aware TTL |
 | **Security** | Rate limiting, fail-fast env validation, ownership checks |

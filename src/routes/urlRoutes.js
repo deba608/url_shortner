@@ -107,6 +107,46 @@ router.get("/user", authenticateToken, urlController.getUserUrls);
  *                       type: array
  *                       items:
  *                         type: object
+ *                     byBrowser:
+ *                       type: array
+ *                       description: Click counts grouped by browser, sorted desc.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value: { type: string }
+ *                           count: { type: integer }
+ *                     byOs:
+ *                       type: array
+ *                       description: Click counts grouped by operating system, sorted desc.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value: { type: string }
+ *                           count: { type: integer }
+ *                     byDevice:
+ *                       type: array
+ *                       description: Click counts grouped by device type (desktop/mobile/tablet/bot), sorted desc.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value: { type: string }
+ *                           count: { type: integer }
+ *                     byCountry:
+ *                       type: array
+ *                       description: Click counts grouped by country (ISO code, geoip), sorted desc.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value: { type: string }
+ *                           count: { type: integer }
+ *                     byReferrer:
+ *                       type: array
+ *                       description: Click counts grouped by referrer, sorted desc.
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           value: { type: string }
+ *                           count: { type: integer }
  *       401:
  *         description: Unauthorized
  *       404:
@@ -119,7 +159,11 @@ router.get("/urls/:id/analytics", authenticateToken, urlController.getUrlAnalyti
  * /urls/{id}/qrcode:
  *   get:
  *     summary: Get a QR code for a shortened URL
- *     description: Returns a base64 PNG data URL by default, or the raw PNG image with ?format=png.
+ *     description: >
+ *       Returns a base64 PNG data URL as JSON by default. Use `format=png` or
+ *       `format=svg` to get a raw image body. Supports styling via query params
+ *       (size, color, bg, margin) and an optional center logo (the user's avatar,
+ *       PNG only). Results are cached per (short code + style).
  *     tags: [URLs]
  *     parameters:
  *       - in: path
@@ -132,13 +176,53 @@ router.get("/urls/:id/analytics", authenticateToken, urlController.getUrlAnalyti
  *         required: false
  *         schema:
  *           type: string
- *           enum: [png]
- *         description: When set to "png", responds with an image/png body instead of JSON.
+ *           enum: [json, png, svg]
+ *           default: json
+ *         description: json returns a base64 data URL; png/svg return a raw image body.
+ *       - in: query
+ *         name: size
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 100
+ *           maximum: 1000
+ *           default: 300
+ *         description: Image width in px (clamped to 100–1000). Ignored for svg sizing beyond viewBox.
+ *       - in: query
+ *         name: color
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "#000000"
+ *         description: Foreground (dark) hex color, format "#rrggbb".
+ *       - in: query
+ *         name: bg
+ *         required: false
+ *         schema:
+ *           type: string
+ *           example: "#ffffff"
+ *         description: Background (light) hex color, format "#rrggbb".
+ *       - in: query
+ *         name: margin
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 0
+ *           maximum: 10
+ *           default: 2
+ *         description: Quiet-zone margin in modules (clamped 0–10).
+ *       - in: query
+ *         name: logo
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: When true (png only), composites the user's avatar in the center. Uses error-correction level H.
  *     responses:
  *       200:
- *         description: QR code (JSON base64 data URL, or image/png)
+ *         description: QR code (JSON base64 data URL, or a raw image/png | image/svg+xml body)
  *       400:
- *         description: Invalid URL id
+ *         description: Invalid URL id or invalid style params (bad hex color, logo+svg, unknown format)
  *       401:
  *         description: Unauthorized
  *       404:

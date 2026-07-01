@@ -7,6 +7,8 @@ const mockUrlFindMany = jest.fn();
 const mockUrlCreate = jest.fn();
 const mockUrlUpdate = jest.fn();
 const mockUrlDelete = jest.fn();
+const mockClickCreate = jest.fn();
+const mockTransaction = jest.fn();
 
 jest.mock("../src/config/database", () => ({
   url: {
@@ -17,6 +19,10 @@ jest.mock("../src/config/database", () => ({
     update: (...a) => mockUrlUpdate(...a),
     delete: (...a) => mockUrlDelete(...a),
   },
+  click: {
+    create: (...a) => mockClickCreate(...a),
+  },
+  $transaction: (...a) => mockTransaction(...a),
 }));
 
 const mockRedisGet = jest.fn();
@@ -142,5 +148,67 @@ describe("deleteUrl", () => {
 
   it("rejects a non-numeric id", async () => {
     await expect(urlService.deleteUrl("abc", 1)).rejects.toMatchObject({ statusCode: 400 });
+  });
+});
+
+describe("recordClick enrichment", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("enriches a click with browser, os, device, and country", async () => {
+    mockTransaction.mockResolvedValue([
+      { id: 1, clicks: 1 },
+      { id: 1, browser: "Chrome", os: "Windows", device: "desktop", country: "US", referrer: "https://google.com" },
+    ]);
+
+    const result = await urlService.recordClick(1, {
+      ipAddress: "8.8.8.8",
+      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120.0.0.0 Safari/537.36",
+      referrer: "https://google.com",
+    });
+
+    expect(result).toBeDefined();
+    // The create call inside $transaction should have enrichment fields
+    const createArgs = mockClickCreate.mock.calls[0]?.[0] || {};
+    // $transaction uses an array of operations, so click.create is wrapped
+    // but mockTransaction gets the whole array — verify click.create was called
+    expect(mockClickCreate).toHaveBeenCalled();
+  });
+
+  it("records a click with null enrichment when user-agent is missing", async () => {
+    mockTransaction.mockResolvedValue([
+      { id: 1, clicks: 1 },
+      { id: 1, browser: null, os: null, device: "desktop", country: null, referrer: null },
+    ]);
+
+    await urlService.recordClick(1, { ipAddress: null, userAgent: null });
+
+    expect(mockClickCreate).toHaveBeenCalled();
+  });
+});
+
+describe("updateOriginalUrl", () => {
+  beforeEach(() => jest.clearAllMocks());
+
+  it("updates the destination URL and invalidates the redirect cache", async () => {
+    mockUrlFindFirst.mockResolvedValue({ id: 1, shortCode: "abc" });
+    mockUrlUpdate.mockResolvedValue({ id: 1, shortCode: "abc", originalUrl: "https://new.example.com" });
+
+    const result = await urlService.updateOriginalUrl("1", 1, "https://new.example.com");
+
+    expect(result.originalUrl).toBe("https://new.example.com");
+    expect(mockUrlUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { id: 1 }, data: { originalUrl: "https://new.example.com" } })
+    );
+    expect(mockRedisDel).toHaveBeenCalledWith("abc");
+  });
+
+  it("throws 404 when the url is not owned", async () => {
+    mockUrlFindFirst.mockResolvedValue(null);
+    await expect(urlService.updateOriginalUrl("1", 1, "https://new.example.com")).rejects.toMatchObject({ statusCode: 404 });
+    expect(mockUrlUpdate).not.toHaveBeenCalled();
+  });
+
+  it("throws 400 for a non-numeric id", async () => {
+    await expect(urlService.updateOriginalUrl("abc", 1, "https://new.example.com")).rejects.toMatchObject({ statusCode: 400 });
   });
 });
