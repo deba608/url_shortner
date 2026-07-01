@@ -93,7 +93,7 @@ Checkbox = done.
 - [x] **C. redis.js logged via console.error instead of winston.**
   Now routed through the structured logger. Files: `src/config/redis.js`.
 
-- [ ] **A. prestart.js runs `prisma db push --accept-data-loss` every prod deploy.**
+- [x] **A. prestart.js runs `prisma db push --accept-data-loss` every prod deploy.**
   Prod ignores migration history (this file force-pushes schema.prisma), so
   migration files never run in prod, AND any column/table removal silently
   DESTROYS production data on the next deploy. Intentional per the file comment,
