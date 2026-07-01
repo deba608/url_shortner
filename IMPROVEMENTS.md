@@ -100,3 +100,21 @@ Checkbox = done.
   but high-risk. **Recommend:** switch prod to `prisma migrate deploy` and drop
   `--accept-data-loss`, after reconciling the migration drift. Needs a decision.
   Files: `scripts/prestart.js`, `package.json`.
+
+---
+
+## Round 3
+
+- [x] **D. Dockerfile bypassed the prestart fix (data-loss risk in containers).**
+  After fix A, `scripts/prestart.js` uses `migrate deploy`, but the Dockerfile
+  `CMD` still ran `npx prisma db push --accept-data-loss && node server.js`
+  directly — so any Docker-based deploy kept the destructive behavior and skipped
+  prestart. Changed `CMD` to `npm start` so Docker and Render share one DB path.
+  Files: `Dockerfile`.
+
+- [x] **E. Container ran as root.** Added `USER node` for least-privilege.
+  Files: `Dockerfile`.
+
+- [x] **F. Stale deploy docs.** `render.yaml` and Dockerfile comments still
+  described the old "db push" flow. Updated to reflect `migrate deploy`.
+  Files: `render.yaml`, `Dockerfile`.

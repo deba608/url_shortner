@@ -15,8 +15,8 @@ services:
     #   • Render caches node_modules between deploys when lock is unchanged
     buildCommand: npm ci && npx prisma generate
 
-    # prestart.js (scripts/prestart.js) resolves any failed migrations then
-    # syncs schema via db push before launching the Express server.
+    # `npm start` runs scripts/prestart.js (prisma migrate deploy — non-destructive)
+    # then launches the Express server.
     startCommand: npm start
 
     healthCheckPath: /health

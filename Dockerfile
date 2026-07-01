@@ -31,10 +31,12 @@ COPY --from=deps /app/node_modules ./node_modules
 # Copy source (changes on every deploy, but npm install is already cached)
 COPY . .
 
+# Run as the non-root user shipped in the node image (hardening).
+USER node
+
 EXPOSE 3000
 
-# Sync the DB to schema.prisma on boot. We use `db push` (not `migrate deploy`)
-# because the Google-OAuth User model was evolved via db push, not migrations —
-# and `db push` ignores the _prisma_migrations table, so a previously failed
-# migration (P3009) can't block startup. Then start the server.
-CMD ["sh", "-c", "npx prisma db push --accept-data-loss && node server.js"]
+# `npm start` runs scripts/prestart.js (prisma migrate deploy — non-destructive,
+# aborts on failure) then launches the server. Keep DB setup in one place so
+# Docker and Render behave identically.
+CMD ["npm", "start"]
