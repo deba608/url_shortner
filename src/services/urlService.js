@@ -172,32 +172,137 @@ const getUrlByShortCode = async (shortCode) => {
 };
 
 /**
+ * Stable hash of QR style params for cache-key isolation so styled QR codes
+ * don't collide with unstyled ones.
+ */
+const qrStyleHash = (opts) => {
+  const h = crypto.createHash("md5");
+  h.update(`${opts.format}|${opts.size}|${opts.color}|${opts.bg}|${opts.margin}|${opts.logo}`);
+  return h.digest("hex").slice(0, 8);
+};
+
+/**
+ * Parse and validate QR customization query params.
+ *
+ * @param {object} query - req.query
+ * @returns {{ format, size, color, bg, margin, logo }}
+ */
+const parseQrOptions = (query) => {
+  const opts = {};
+
+  opts.format = query.format || "json";
+  if (!["json", "png", "svg"].includes(opts.format)) {
+    throw new ApiError(400, "format must be one of: json, png, svg");
+  }
+
+  const parsedSize = parseInt(query.size, 10);
+  opts.size = Number.isNaN(parsedSize) ? 300 : Math.min(1000, Math.max(100, parsedSize));
+
+  if (query.color && !/^#([0-9a-fA-F]{6})$/.test(query.color)) {
+    throw new ApiError(400, "color must be a hex string like #000000");
+  }
+  opts.color = query.color || "#000000";
+
+  if (query.bg && !/^#([0-9a-fA-F]{6})$/.test(query.bg)) {
+    throw new ApiError(400, "bg must be a hex string like #ffffff");
+  }
+  opts.bg = query.bg || "#ffffff";
+
+  const parsedMargin = parseInt(query.margin, 10);
+  opts.margin = Number.isNaN(parsedMargin) ? 2 : Math.min(10, Math.max(0, parsedMargin));
+
+  opts.logo = query.logo === "true";
+
+  if (opts.logo && opts.format === "svg") {
+    throw new ApiError(400, "logo only supported with png");
+  }
+
+  return opts;
+};
+
+/**
  * Generate (and cache) a QR code for a URL the user owns.
  * The QR encodes the public short URL, not the original destination, so analytics
  * and expiration still apply when the code is scanned.
  *
- * @returns {{ dataUrl: string, shortUrl: string, shortCode: string }}
+ * Accepts optional style query params: format, size, color, bg, margin, logo.
+ *
+ * @returns {{ dataUrl?: string, shortUrl: string, shortCode: string, buffer?: Buffer, contentType?: string }}
  */
-const getQrCode = async (urlId, userId) => {
+const getQrCode = async (urlId, userId, query = {}) => {
   const url = await findOwnedUrlOr404(urlId, userId, { id: true, shortCode: true });
 
-  const cacheKey = `${QR_PREFIX}${url.shortCode}`;
+  const opts = parseQrOptions(query);
   const shortUrl = `${config.baseUrl}/${url.shortCode}`;
 
-  // QR images are deterministic for a given short URL, so caching is safe and cheap.
+  // Cache key includes a hash of all style params so styled codes are isolated.
+  const cacheKey = `${QR_PREFIX}${url.shortCode}:${qrStyleHash(opts)}`;
+
+  // QR images are deterministic for a given (short URL + style), so caching is safe.
   const cached = await redisClient.get(cacheKey);
-  if (cached) {
-    return { dataUrl: cached, shortUrl, shortCode: url.shortCode };
+  if (cached && opts.format !== "svg") {
+    // Only cache-return json and png; svg is generated fresh (small size, rare).
+    if (opts.format === "json") {
+      return { dataUrl: cached, shortUrl, shortCode: url.shortCode };
+    }
+    if (opts.format === "png") {
+      return { buffer: Buffer.from(cached, "base64"), shortUrl, shortCode: url.shortCode, contentType: "image/png" };
+    }
   }
 
-  const dataUrl = await QRCode.toDataURL(shortUrl, {
-    errorCorrectionLevel: "M",
-    margin: 2,
-    width: 300,
-  });
+  const qrConfig = {
+    errorCorrectionLevel: opts.logo ? "H" : "M",
+    margin: opts.margin,
+    width: opts.size,
+    color: { dark: opts.color, light: opts.bg },
+  };
 
-  await redisClient.set(cacheKey, dataUrl, "EX", QR_CACHE_TTL);
+  let result;
+  if (opts.format === "svg") {
+    const svg = await QRCode.toString(shortUrl, { ...qrConfig, type: "svg" });
+    result = { buffer: Buffer.from(svg), shortUrl, shortCode: url.shortCode, contentType: "image/svg+xml" };
+    // SVGs are small — still cacheable.
+    await redisClient.set(cacheKey, svg, "EX", QR_CACHE_TTL).catch(() => {});
+    return result;
+  }
 
+  if (opts.format === "png") {
+    let pngBuffer = await QRCode.toBuffer(shortUrl, qrConfig);
+
+    // Optionally composite user avatar over the center of the QR.
+    if (opts.logo) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { avatar: true },
+      });
+
+      if (user?.avatar) {
+        const logoSize = Math.round(opts.size * 0.2);
+        try {
+          const logoBuffer = await sharp(Buffer.from(user.avatar.split(",")[1], "base64"))
+            .resize(logoSize, logoSize)
+            .toBuffer();
+          const composite = await sharp(pngBuffer)
+            .composite([{
+              input: logoBuffer,
+              gravity: "center",
+            }])
+            .png()
+            .toBuffer();
+          pngBuffer = composite;
+        } catch {
+          // Ignore logo composite errors — serve plain QR.
+        }
+      }
+    }
+
+    await redisClient.set(cacheKey, pngBuffer.toString("base64"), "EX", QR_CACHE_TTL).catch(() => {});
+    return { buffer: pngBuffer, shortUrl, shortCode: url.shortCode, contentType: "image/png" };
+  }
+
+  // Default: json / data URL
+  const dataUrl = await QRCode.toDataURL(shortUrl, qrConfig);
+  await redisClient.set(cacheKey, dataUrl, "EX", QR_CACHE_TTL).catch(() => {});
   return { dataUrl, shortUrl, shortCode: url.shortCode };
 };
 

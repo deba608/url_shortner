@@ -103,19 +103,17 @@ const getQrCode = catchAsync(async (req, res) => {
   const userId = req.user.id;
   const { id } = req.params;
 
-  const { dataUrl, shortUrl, shortCode } = await urlService.getQrCode(id, userId);
+  const result = await urlService.getQrCode(id, userId, req.query);
 
-  // ?format=png streams the raw image; default returns the base64 data URL as JSON.
-  if (req.query.format === "png") {
-    const base64 = dataUrl.split(",")[1];
-    const buffer = Buffer.from(base64, "base64");
-    res.set("Content-Type", "image/png");
-    return res.send(buffer);
+  // png and svg formats return a raw buffer; json returns a JSON body with dataUrl.
+  if (result.contentType) {
+    res.set("Content-Type", result.contentType);
+    return res.send(result.buffer);
   }
 
   res.json({
     status: "success",
-    data: { shortCode, shortUrl, qrCode: dataUrl },
+    data: { shortCode: result.shortCode, shortUrl: result.shortUrl, qrCode: result.dataUrl },
   });
 });
 
