@@ -161,6 +161,43 @@ export default function UrlCard({ url, onDeleted }) {
 
       <QrModal urlId={url.id} shortCode={url.shortCode} open={showQr} onClose={() => setShowQr(false)} />
 
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit destination URL">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setSaving(true);
+            setError("");
+            try {
+              const result = await updateOriginalUrl(url.id, editUrl);
+              url.originalUrl = result.originalUrl;
+              setEditOpen(false);
+              toast("Link updated", "success");
+              onDeleted?.();
+            } catch (err) {
+              setError(err.message || "Update failed");
+              toast("Failed to update URL", "error");
+            } finally {
+              setSaving(false);
+            }
+          }}
+        >
+          <label className="text-xs text-gray-400 mb-1 block">New destination URL</label>
+          <input
+            type="url"
+            value={editUrl}
+            onChange={(e) => setEditUrl(e.target.value)}
+            required
+            placeholder="https://example.com/new-page"
+            className="w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-indigo-400/50 transition-colors"
+          />
+          {error && <p className="mt-2 text-sm text-red-400">{error}</p>}
+          <div className="mt-5 flex justify-end gap-2">
+            <Button variant="secondary" size="sm" type="button" onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button variant="primary" size="sm" loading={saving} type="submit">Save</Button>
+          </div>
+        </form>
+      </Modal>
+
       <Modal open={confirmOpen} onClose={() => setConfirmOpen(false)} title="Delete this link?">
         <p className="text-sm text-gray-400">
           <span className="font-semibold text-white">/{url.shortCode}</span> and its
