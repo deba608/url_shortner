@@ -237,9 +237,16 @@ const deleteUrl = async (urlId, userId) => {
   return { id: url.id, shortCode: url.shortCode };
 };
 
-const recordClick = async (urlId, ipAddress, userAgent) => {
-  // Increment the counter and log the click in one transaction. The caller
-  // passes the already-resolved url id (redirect path), so no extra lookup here.
+const recordClick = async (urlId, { ipAddress, userAgent, referrer } = {}) => {
+  // Enrich click data with browser, OS, device, country from the raw data.
+  const ua = userAgent ? new UAParser(userAgent) : null;
+  const browser = ua ? ua.getBrowser().name || null : null;
+  const os = ua ? ua.getOS().name || null : null;
+  let device = ua ? ua.getDevice().type || "desktop" : null;
+  // ua-parser-js may return "bot" from the device type when the UA matches a crawler list
+  if (ua && ua.getUA().toLowerCase().includes("bot")) device = "bot";
+  const country = ipAddress ? (geoip.lookup(ipAddress)?.country ?? null) : null;
+
   const [updatedUrl] = await prisma.$transaction([
     prisma.url.update({
       where: { id: urlId },
@@ -250,6 +257,11 @@ const recordClick = async (urlId, ipAddress, userAgent) => {
         urlId,
         ipAddress: ipAddress || null,
         userAgent: userAgent || null,
+        referrer: referrer || null,
+        browser,
+        os,
+        device,
+        country,
       },
     }),
   ]);
@@ -280,8 +292,19 @@ const getUrlAnalytics = async (urlId, userId) => {
   const oneDayAgo = new Date(now - 24 * 60 * 60 * 1000);
   const sevenDaysAgo = new Date(now - 7 * 24 * 60 * 60 * 1000);
 
-  // Run the independent aggregations concurrently to keep latency low.
-  const [lastClick, uniqueRows, dailyClicks, weeklyClicks] = await Promise.all([
+  const groupByField = async (field) => {
+    const rows = await prisma.click.groupBy({
+      by: [field],
+      where: { urlId: url.id },
+      _count: { _all: true },
+    });
+    return rows
+      .map((r) => ({ value: r[field] || "unknown", count: r._count._all }))
+      .sort((a, b) => b.count - a.count);
+  };
+
+  // Run all aggregations concurrently to keep latency low.
+  const [lastClick, uniqueRows, dailyClicks, weeklyClicks, byBrowser, byOs, byDevice, byCountry, byReferrer] = await Promise.all([
     prisma.click.findFirst({
       where: { urlId: url.id },
       orderBy: { clickedAt: "desc" },
@@ -295,6 +318,11 @@ const getUrlAnalytics = async (urlId, userId) => {
     prisma.click.count({
       where: { urlId: url.id, clickedAt: { gte: sevenDaysAgo } },
     }),
+    groupByField("browser"),
+    groupByField("os"),
+    groupByField("device"),
+    groupByField("country"),
+    groupByField("referrer"),
   ]);
 
   return {
@@ -305,6 +333,11 @@ const getUrlAnalytics = async (urlId, userId) => {
     weeklyClicks,
     createdAt: url.createdAt,
     clickHistory: url.clickHistory,
+    byBrowser,
+    byOs,
+    byDevice,
+    byCountry,
+    byReferrer,
   };
 };
 

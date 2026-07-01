@@ -34,14 +34,15 @@ const redirectToUrl = catchAsync(async (req, res) => {
     throw new ApiError(410, "This short URL has expired");
   }
 
-  // Extract IP and User-Agent
+  // Extract IP, User-Agent, and referrer for click enrichment
   const ipAddress = req.ip || req.connection.remoteAddress;
   const userAgent = req.get('user-agent');
+  const referrer = req.get('referer');
 
   // Asynchronously record the click without blocking the redirect response.
   // Pass the already-fetched id so recordClick skips a second lookup on this
   // hot path (url came from getUrlByShortCode, possibly cache).
-  urlService.recordClick(url.id, ipAddress, userAgent).catch(err => {
+  urlService.recordClick(url.id, { ipAddress, userAgent, referrer }).catch(err => {
     logger.error("Failed to record click", { shortCode, error: err.message });
   });
 
