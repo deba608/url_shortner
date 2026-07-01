@@ -5,6 +5,7 @@ const mockUrlFindFirst = jest.fn();
 const mockUrlFindMany = jest.fn();
 const mockClickFindFirst = jest.fn();
 const mockClickCount = jest.fn();
+const mockClickGroupBy = jest.fn();
 const mockQueryRaw = jest.fn();
 
 jest.mock("../src/config/database", () => ({
@@ -15,6 +16,7 @@ jest.mock("../src/config/database", () => ({
   click: {
     findFirst: (...a) => mockClickFindFirst(...a),
     count: (...a) => mockClickCount(...a),
+    groupBy: (...a) => mockClickGroupBy(...a),
   },
   $queryRaw: (...a) => mockQueryRaw(...a),
 }));
@@ -35,7 +37,7 @@ describe("getUrlAnalytics", () => {
     await expect(urlService.getUrlAnalytics("1", 1)).rejects.toMatchObject({ statusCode: 404 });
   });
 
-  it("aggregates total, unique, daily and weekly clicks", async () => {
+  it("aggregates total, unique, daily, weekly, and grouped breakdowns", async () => {
     const createdAt = new Date("2026-01-01T00:00:00Z");
     mockUrlFindFirst.mockResolvedValue({
       id: 1,
@@ -48,6 +50,11 @@ describe("getUrlAnalytics", () => {
     mockQueryRaw.mockResolvedValue([{ count: 2 }]);
     // count is called twice: daily then weekly
     mockClickCount.mockResolvedValueOnce(3).mockResolvedValueOnce(7);
+    // groupBy responses for browser, os, device, country, referrer
+    mockClickGroupBy.mockResolvedValue([
+      { browser: "Chrome", _count: { _all: 5 } },
+      { browser: "Firefox", _count: { _all: 3 } },
+    ]);
 
     const result = await urlService.getUrlAnalytics("1", 1);
 
@@ -60,7 +67,15 @@ describe("getUrlAnalytics", () => {
     });
     expect(result.lastAccessed).toEqual(new Date("2026-06-16T00:00:00Z"));
     expect(result.clickHistory).toHaveLength(2);
+    // Grouped breakdowns present and sorted desc by count
+    expect(result.byBrowser).toBeDefined();
+    expect(result.byOs).toBeDefined();
+    expect(result.byDevice).toBeDefined();
+    expect(result.byCountry).toBeDefined();
+    expect(result.byReferrer).toBeDefined();
     expect(mockClickCount).toHaveBeenCalledTimes(2);
+    // groupBy called 5 times (browser, os, device, country, referrer)
+    expect(mockClickGroupBy).toHaveBeenCalledTimes(5);
   });
 
   it("reports null lastAccessed when there are no clicks", async () => {
@@ -68,6 +83,7 @@ describe("getUrlAnalytics", () => {
     mockClickFindFirst.mockResolvedValue(null);
     mockQueryRaw.mockResolvedValue([{ count: 0 }]);
     mockClickCount.mockResolvedValue(0);
+    mockClickGroupBy.mockResolvedValue([]);
 
     const result = await urlService.getUrlAnalytics("1", 1);
     expect(result.lastAccessed).toBeNull();

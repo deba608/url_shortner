@@ -20,6 +20,8 @@ const ApiError = require("../src/utils/ApiError");
 describe("getQrCode", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // Service does redisClient.set(...).catch(...), so set must return a promise.
+    mockSet.mockResolvedValue("OK");
   });
 
   it("rejects a non-numeric id", async () => {
