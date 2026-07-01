@@ -6,30 +6,30 @@ import axiosClient from "@/api/axiosClient";
 
 export const getUserUrls = async (config) => {
   const { data } = await axiosClient.get("/user", config);
-  return data.data.map((url) => ({
+  return (data?.data || []).map((url) => ({
     ...url,
-    shortUrl: `${window.location.origin}/${url.shortCode}`,
+    shortUrl: url?.shortCode ? `${window.location.origin}/${url.shortCode}` : "",
   }));
 };
 
 export const createShortUrl = async (payload) => {
   const { data } = await axiosClient.post("/shorten", payload);
   return {
-    ...data.data,
-    shortUrl: `${window.location.origin}/${data.data.shortCode}`,
+    ...data?.data,
+    shortUrl: data?.data?.shortCode ? `${window.location.origin}/${data.data.shortCode}` : "",
   };
 };
 
 export const getUrlAnalytics = async (id, config) => {
   const { data } = await axiosClient.get(`/urls/${id}/analytics`, config);
-  return data.data;
+  return data?.data;
 };
 
 export const getUrlQrCode = async (id, params = {}) => {
   const { data } = await axiosClient.get(`/urls/${id}/qrcode`, { params });
   return {
-    ...data.data,
-    shortUrl: `${window.location.origin}/${data.data.shortCode}`,
+    ...data?.data,
+    shortUrl: data?.data?.shortCode ? `${window.location.origin}/${data.data.shortCode}` : "",
   };
 };
 
@@ -43,10 +43,11 @@ export const getUrlQrCodeBlob = async (id, params = {}) => {
 
 export const deleteUrl = async (id) => {
   const { data } = await axiosClient.delete(`/urls/${id}`);
-  return data.data;
+  return data?.data;
 };
 
 export const updateOriginalUrl = async (id, originalUrl) => {
   const { data } = await axiosClient.patch(`/urls/${id}`, { originalUrl });
-  return data.data;
+  return data?.data;
 };
+

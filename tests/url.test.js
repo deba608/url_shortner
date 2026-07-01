@@ -133,13 +133,17 @@ describe("deleteUrl", () => {
   it("deletes an owned url and evicts its cache entries", async () => {
     mockUrlFindFirst.mockResolvedValue({ id: 1, shortCode: "abc" });
     mockUrlDelete.mockResolvedValue({ id: 1 });
+    // Two styled QR variants cached under the shortCode.
+    mockRedisKeys.mockResolvedValue(["qr:abc:hash1", "qr:abc:hash2"]);
 
     const result = await urlService.deleteUrl("1", 1);
 
     expect(result).toEqual({ id: 1, shortCode: "abc" });
     expect(mockUrlDelete).toHaveBeenCalledWith({ where: { id: 1 } });
     expect(mockRedisDel).toHaveBeenCalledWith("abc"); // redirect cache
-    expect(mockRedisDel).toHaveBeenCalledWith("qr:abc"); // qr cache
+    // QR keys are matched by pattern, then deleted together.
+    expect(mockRedisKeys).toHaveBeenCalledWith("qr:abc:*");
+    expect(mockRedisDel).toHaveBeenCalledWith("qr:abc:hash1", "qr:abc:hash2");
   });
 
   it("throws 404 when the url is not owned", async () => {
