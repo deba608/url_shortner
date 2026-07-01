@@ -1,9 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { getUrlQrCode } from "@/api/urls";
+import axiosClient from "@/api/axiosClient";
 import Modal from "@/components/ui/Modal";
 import Skeleton from "@/components/ui/Skeleton";
 
 const FORMATS = ["png", "svg", "json"];
+
+function buildApiUrl(urlId, format, size, color, bg, margin, logo) {
+  const params = new URLSearchParams();
+  if (format !== "json") params.set("format", format);
+  if (size !== 300) params.set("size", size);
+  if (color !== "#000000") params.set("color", color);
+  if (bg !== "#ffffff") params.set("bg", bg);
+  if (margin !== 2) params.set("margin", margin);
+  if (logo) params.set("logo", "true");
+  const qs = params.toString();
+  return `${axiosClient.defaults.baseURL}/urls/${urlId}/qrcode${qs ? `?${qs}` : ""}`;
+}
 
 export default function QrModal({ urlId, shortCode, open, onClose }) {
   const [format, setFormat] = useState("png");
@@ -16,25 +29,23 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const buildUrl = useCallback(() => {
-    const params = new URLSearchParams();
-    if (format !== "json") params.set("format", format);
-    if (size !== 300) params.set("size", size);
-    if (color !== "#000000") params.set("color", color);
-    if (bg !== "#ffffff") params.set("bg", bg);
-    if (margin !== 2) params.set("margin", margin);
-    if (logo) params.set("logo", "true");
-    const qs = params.toString();
-    return `/urls/${urlId}/qrcode${qs ? `?${qs}` : ""}`;
-  }, [urlId, format, size, color, bg, margin, logo]);
+  // For JSON format we fetch the data URL via axios.
+  // For png/svg the backend returns raw binary, so we just render the API URL directly.
+  const imgSrc = format === "json"
+    ? qr?.qrCode
+    : buildApiUrl(urlId, format, size, color, bg, margin, logo);
 
   useEffect(() => {
-    if (!open) return;
+    if (!open || format !== "json") {
+      setQr(null);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     let active = true;
     setLoading(true);
     setError(null);
     const params = {};
-    if (format !== "json") params.format = format;
     if (size !== 300) params.size = size;
     if (color !== "#000000") params.color = color;
     if (bg !== "#ffffff") params.bg = bg;
@@ -49,15 +60,14 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
   }, [open, urlId, format, size, color, bg, margin, logo]);
 
   const handleDownload = () => {
-    if (!qr) return;
-    if (format === "json") {
+    if (format === "json" && qr) {
       const a = document.createElement("a");
       a.href = qr.qrCode;
       a.download = `qr-${shortCode}.png`;
       a.click();
     } else {
       const a = document.createElement("a");
-      a.href = `${buildUrl()}&download=true`;
+      a.href = buildApiUrl(urlId, format, size, color, bg, margin, logo);
       a.download = `qr-${shortCode}.${format}`;
       a.click();
     }
@@ -66,9 +76,7 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
   return (
     <Modal open={open} onClose={onClose} title={`QR Code · /${shortCode}`} size="md">
       <div className="flex flex-col items-center gap-5">
-        {/* Controls */}
         <div className="w-full grid grid-cols-2 gap-3">
-          {/* Format */}
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Format</label>
             <div className="flex gap-1">
@@ -88,7 +96,6 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
             </div>
           </div>
 
-          {/* Size */}
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Size: {size}px</label>
             <input
@@ -102,7 +109,6 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
             />
           </div>
 
-          {/* Color */}
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Color</label>
             <input
@@ -113,7 +119,6 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
             />
           </div>
 
-          {/* Background */}
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Background</label>
             <input
@@ -124,7 +129,6 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
             />
           </div>
 
-          {/* Margin */}
           <div>
             <label className="text-xs text-gray-400 mb-1 block">Margin: {margin}</label>
             <input
@@ -138,7 +142,6 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
             />
           </div>
 
-          {/* Logo */}
           <div className="flex items-end pb-1">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -152,35 +155,35 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
           </div>
         </div>
 
-        {/* QR display */}
         <div className="rounded-2xl border border-white/10 p-3 bg-white">
           {loading && <Skeleton className="h-48 w-48" />}
           {!loading && error && (
             <p className="text-sm text-red-400 text-center h-48 flex items-center justify-center">{error}</p>
           )}
-          {!loading && !error && qr && (
+          {!loading && !error && imgSrc && (
             <img
-              src={format === "json" ? qr.qrCode : buildUrl()}
-              alt={`QR code for ${qr.shortUrl}`}
+              src={imgSrc}
+              alt={`QR code for ${shortCode}`}
               className="h-48 w-48 rounded-xl"
             />
           )}
         </div>
 
-        {qr && (
-          <p className="text-xs text-gray-400 text-center max-w-[200px] truncate">{qr.shortUrl}</p>
-        )}
-
-        {qr && (
-          <button
-            onClick={handleDownload}
-            className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition-all"
-          >
-            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Download {format.toUpperCase()}
-          </button>
+        {imgSrc && (
+          <>
+            <p className="text-xs text-gray-400 text-center max-w-[200px] truncate">
+              {`${window.location.origin}/${shortCode}`}
+            </p>
+            <button
+              onClick={handleDownload}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium rounded-lg bg-indigo-500/20 border border-indigo-400/30 text-indigo-300 hover:bg-indigo-500/30 transition-all"
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download {format.toUpperCase()}
+            </button>
+          </>
         )}
       </div>
     </Modal>
