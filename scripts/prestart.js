@@ -2,31 +2,30 @@
 /**
  * prestart.js — runs before `node server.js` on every deploy.
  *
- * 1. Marks the known-failed migration as rolled-back (safe to re-run if already resolved).
- * 2. Pushes the current schema.prisma to the database, creating / altering tables as needed.
+ * Applies any pending Prisma migrations with `prisma migrate deploy`. This is the
+ * safe production path: it only runs migration files that haven't been applied
+ * yet and NEVER drops data. If a migration fails, we abort the boot (non-zero
+ * exit) so the platform doesn't start the server against a half-migrated schema.
  *
- * Using `db push --accept-data-loss` is intentional for this project:
- * the schema evolved via push (not migrate) so the migration history is not
- * the source of truth for production.
+ * NOTE (one-time baseline): this project previously deployed via
+ * `db push --accept-data-loss`, so a live database may already contain the schema
+ * without matching rows in Prisma's `_prisma_migrations` table. Before the first
+ * deploy on this flow, baseline each already-applied migration once:
+ *   npx prisma migrate resolve --applied <migration_name>
+ * See README ("Database migrations") for the full list.
  */
 const { execSync } = require("child_process");
 
 function run(cmd) {
   console.log(`\n> ${cmd}`);
-  try {
-    execSync(cmd, { stdio: "inherit" });
-  } catch (err) {
-    // Non-zero exit is acceptable for resolve (migration may already be resolved)
-    console.warn(`Command exited with code ${err.status}. Continuing...`);
-  }
+  execSync(cmd, { stdio: "inherit" }); // throws on non-zero → aborts boot
 }
 
-// Step 1: Clear any failed migration records so db push is not blocked.
-run(
-  "npx prisma migrate resolve --rolled-back 20260617150519_add_name_and_avatar"
-);
-
-// Step 2: Sync the live database schema to schema.prisma.
-run("npx prisma db push --accept-data-loss");
-
-console.log("\n✅ prestart complete — starting server...");
+try {
+  run("npx prisma migrate deploy");
+  console.log("\n✅ prestart complete — starting server...");
+} catch (err) {
+  console.error(`\n❌ prestart failed: migrations did not apply cleanly (exit ${err.status}).`);
+  console.error("Aborting startup to avoid running against an inconsistent schema.");
+  process.exit(1);
+}
