@@ -25,6 +25,10 @@ const validateEnv = () => {
       logger.error("REDIS_URL is required in production");
       process.exit(1);
     }
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET.trim() === "") {
+      logger.error("JWT_SECRET is required in production");
+      process.exit(1);
+    }
     if (!process.env.BASE_URL) {
       logger.warn("BASE_URL is not set; generated short URLs may point at the wrong host");
     }

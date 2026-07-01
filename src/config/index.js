@@ -7,5 +7,10 @@ module.exports = {
   nodeEnv: process.env.NODE_ENV || "development",
 
   // Auth: sessions are JWTs signed with JWT_SECRET and stored in an
-  // HttpOnly cookie. JWT_SECRET comes from the environment.
+  // HttpOnly cookie. JWT_SECRET comes from the environment. The dev fallback is
+  // ONLY used outside production — validateEnv hard-requires the real secret in
+  // production, so the fallback can never sign prod tokens.
+  jwtSecret:
+    process.env.JWT_SECRET ||
+    (process.env.NODE_ENV === "production" ? undefined : "fallback-secret-for-dev"),
 };
