@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
+const JWT_SECRET = require("../config").jwtSecret;
 
 // Pull the JWT from the cookie OR the Authorization: Bearer header. The Bearer
 // path is what works cross-site (Vercel frontend → Render API), where the

@@ -3,7 +3,8 @@ const jwt = require("jsonwebtoken");
 const prisma = require("../config/database");
 const { sendPasswordResetEmail } = require("../utils/emailService");
 
-const JWT_SECRET = process.env.JWT_SECRET || "fallback-secret-for-dev";
+const JWT_SECRET = require("../config").jwtSecret;
+const MIN_PASSWORD_LENGTH = 8;
 
 const register = async (req, res, next) => {
   try {
@@ -18,8 +19,8 @@ const register = async (req, res, next) => {
       return res.status(400).json({ error: "Invalid email format" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long` });
     }
 
     // Check if user already exists
@@ -170,8 +171,8 @@ const resetPassword = async (req, res, next) => {
       return res.status(400).json({ error: "Token and new password are required" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ error: "Password must be at least 6 characters long" });
+    if (password.length < MIN_PASSWORD_LENGTH) {
+      return res.status(400).json({ error: `Password must be at least ${MIN_PASSWORD_LENGTH} characters long` });
     }
 
     let decoded;
