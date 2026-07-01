@@ -349,7 +349,12 @@ const deleteUrl = async (urlId, userId) => {
 
   // Drop any cached entries for this short code so it stops resolving.
   await redisClient.del(url.shortCode);
-  await redisClient.del(`${QR_PREFIX}${url.shortCode}`);
+  // QR cache keys are `${QR_PREFIX}${shortCode}:${styleHash}` (one per style
+  // variant), so an exact-key del misses styled entries. Match the whole set.
+  const qrKeys = await redisClient.keys(`${QR_PREFIX}${url.shortCode}:*`);
+  if (qrKeys.length) {
+    await redisClient.del(...qrKeys);
+  }
 
   return { id: url.id, shortCode: url.shortCode };
 };

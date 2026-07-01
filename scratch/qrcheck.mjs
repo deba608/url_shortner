@@ -1,0 +1,23 @@
+const B = "http://localhost:3000";
+const j = async (r) => ({ status: r.status, body: await r.text() });
+const email = `qrtest${Date.now()}@example.com`;
+let r = await fetch(`${B}/api/auth/register`, { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({email, password:"password123"}) });
+const token = JSON.parse(await r.text()).token;
+const H = { Authorization: `Bearer ${token}` };
+await fetch(`${B}/shorten`, { method:"POST", headers:{...H,"Content-Type":"application/json"}, body: JSON.stringify({url:"https://example.com"}) });
+const urls = JSON.parse(await (await fetch(`${B}/user`, {headers:H})).text()).data;
+const id = urls[0].id;
+console.log("urlId", id);
+const check = async (label, qs) => {
+  const res = await fetch(`${B}/urls/${id}/qrcode${qs}`, { headers: H });
+  const ct = res.headers.get("content-type");
+  const buf = Buffer.from(await res.arrayBuffer());
+  console.log(label, "->", res.status, ct, buf.length + "b");
+};
+await check("png default", "?format=png");
+await check("png red 500", "?format=png&size=500&color=%23ff0000");
+await check("png logo", "?format=png&logo=true");
+await check("svg", "?format=svg");
+await check("logo+svg (expect 400)", "?format=svg&logo=true");
+await check("bad color (expect 400)", "?color=nothex");
+await check("json default", "");

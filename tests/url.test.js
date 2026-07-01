@@ -28,10 +28,12 @@ jest.mock("../src/config/database", () => ({
 const mockRedisGet = jest.fn();
 const mockRedisSet = jest.fn();
 const mockRedisDel = jest.fn();
+const mockRedisKeys = jest.fn();
 jest.mock("../src/config/redis", () => ({
   get: (...a) => mockRedisGet(...a),
   set: (...a) => mockRedisSet(...a),
   del: (...a) => mockRedisDel(...a),
+  keys: (...a) => mockRedisKeys(...a),
 }));
 
 const urlService = require("../src/services/urlService");
