@@ -1,21 +1,21 @@
 import { useState, useEffect } from "react";
-import { getUrlQrCode } from "@/api/urls";
-import axiosClient from "@/api/axiosClient";
+import { getUrlQrCode, getUrlQrCodeBlob } from "@/api/urls";
 import Modal from "@/components/ui/Modal";
 import Skeleton from "@/components/ui/Skeleton";
 
 const FORMATS = ["png", "svg", "json"];
 
-function buildApiUrl(urlId, format, size, color, bg, margin, logo) {
-  const params = new URLSearchParams();
-  if (format !== "json") params.set("format", format);
-  if (size !== 300) params.set("size", size);
-  if (color !== "#000000") params.set("color", color);
-  if (bg !== "#ffffff") params.set("bg", bg);
-  if (margin !== 2) params.set("margin", margin);
-  if (logo) params.set("logo", "true");
-  const qs = params.toString();
-  return `${axiosClient.defaults.baseURL}/urls/${urlId}/qrcode${qs ? `?${qs}` : ""}`;
+// Build the query params the backend expects. Only send non-defaults, and never
+// send `logo` for svg (the backend rejects logo+svg with a 400).
+function buildParams(format, size, color, bg, margin, logo) {
+  const params = {};
+  if (format !== "json") params.format = format;
+  if (size !== 300) params.size = size;
+  if (color !== "#000000") params.color = color;
+  if (bg !== "#ffffff") params.bg = bg;
+  if (margin !== 2) params.margin = margin;
+  if (logo && format === "png") params.logo = "true";
+  return params;
 }
 
 export default function QrModal({ urlId, shortCode, open, onClose }) {
@@ -25,53 +25,55 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
   const [bg, setBg] = useState("#ffffff");
   const [margin, setMargin] = useState(2);
   const [logo, setLogo] = useState(false);
-  const [qr, setQr] = useState(null);
+
+  const [imgSrc, setImgSrc] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // For JSON format we fetch the data URL via axios.
-  // For png/svg the backend returns raw binary, so we just render the API URL directly.
-  const imgSrc = format === "json"
-    ? qr?.qrCode
-    : buildApiUrl(urlId, format, size, color, bg, margin, logo);
-
+  // Fetch through authenticated axios for ALL formats. png/svg come back as a
+  // blob which we turn into an object URL; json returns a base64 data URL.
+  // (An <img src> pointed straight at the API can't send the auth token and
+  // breaks cross-origin — that was why png/svg customization appeared broken.)
   useEffect(() => {
-    if (!open || format !== "json") {
-      setQr(null);
-      setError(null);
-      setLoading(false);
-      return;
-    }
+    if (!open) return;
+
     let active = true;
+    let objectUrl = null;
     setLoading(true);
     setError(null);
-    const params = {};
-    if (size !== 300) params.size = size;
-    if (color !== "#000000") params.color = color;
-    if (bg !== "#ffffff") params.bg = bg;
-    if (margin !== 2) params.margin = margin;
-    if (logo) params.logo = "true";
 
-    getUrlQrCode(urlId, params)
-      .then((data) => active && setQr(data))
-      .catch((err) => active && setError(err.message || "Failed to load QR code"))
+    const params = buildParams(format, size, color, bg, margin, logo);
+
+    const load = async () => {
+      if (format === "json") {
+        const data = await getUrlQrCode(urlId, params);
+        if (active) setImgSrc(data.qrCode);
+      } else {
+        const blob = await getUrlQrCodeBlob(urlId, params);
+        objectUrl = URL.createObjectURL(blob);
+        if (active) setImgSrc(objectUrl);
+      }
+    };
+
+    load()
+      .catch((err) => active && setError(err?.response?.data?.message || err.message || "Failed to load QR code"))
       .finally(() => active && setLoading(false));
-    return () => { active = false; };
+
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
   }, [open, urlId, format, size, color, bg, margin, logo]);
 
   const handleDownload = () => {
-    if (format === "json" && qr) {
-      const a = document.createElement("a");
-      a.href = qr.qrCode;
-      a.download = `qr-${shortCode}.png`;
-      a.click();
-    } else {
-      const a = document.createElement("a");
-      a.href = buildApiUrl(urlId, format, size, color, bg, margin, logo);
-      a.download = `qr-${shortCode}.${format}`;
-      a.click();
-    }
+    if (!imgSrc) return;
+    const a = document.createElement("a");
+    a.href = imgSrc; // data URL (json) or object URL (png/svg) — both downloadable
+    a.download = `qr-${shortCode}.${format === "json" ? "png" : format}`;
+    a.click();
   };
+
+  const logoDisabled = format !== "png";
 
   return (
     <Modal open={open} onClose={onClose} title={`QR Code · /${shortCode}`} size="md">
@@ -143,10 +145,14 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
           </div>
 
           <div className="flex items-end pb-1">
-            <label className="flex items-center gap-2 cursor-pointer">
+            <label
+              className={`flex items-center gap-2 ${logoDisabled ? "opacity-40 cursor-not-allowed" : "cursor-pointer"}`}
+              title={logoDisabled ? "Avatar overlay is available for PNG only" : ""}
+            >
               <input
                 type="checkbox"
-                checked={logo}
+                checked={logo && !logoDisabled}
+                disabled={logoDisabled}
                 onChange={(e) => setLogo(e.target.checked)}
                 className="rounded border-white/20 bg-white/5 accent-indigo-500"
               />
@@ -158,7 +164,7 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
         <div className="rounded-2xl border border-white/10 p-3 bg-white">
           {loading && <Skeleton className="h-48 w-48" />}
           {!loading && error && (
-            <p className="text-sm text-red-400 text-center h-48 flex items-center justify-center">{error}</p>
+            <p className="text-sm text-red-400 text-center h-48 w-48 flex items-center justify-center">{error}</p>
           )}
           {!loading && !error && imgSrc && (
             <img
@@ -169,7 +175,7 @@ export default function QrModal({ urlId, shortCode, open, onClose }) {
           )}
         </div>
 
-        {imgSrc && (
+        {!loading && !error && imgSrc && (
           <>
             <p className="text-xs text-gray-400 text-center max-w-[200px] truncate">
               {`${window.location.origin}/${shortCode}`}
